@@ -66,8 +66,17 @@ BEGIN {
 
 # test setting them during connect
 
-{
-    my $trace_log = 'tmp_dbi_trace.log';
+SKIP: {
+    eval { 
+        require File::Temp;
+        File::Temp->import( 'tempfile' );
+    };
+    skip "Cannot load File::Temp", 7 if $@;
+
+    (undef, my $trace_log) = do {
+        local $^W; # Disable warning about unsafe tempfile() call
+        tempfile( 'dbd_mock_test_XXXX', OPEN => 0 );
+    };
     
     open STDERR, "> $trace_log";
     ok(-f $trace_log, '... the trace log file has been created');
