@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 29;
+use Test::More tests => 26;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -37,8 +37,8 @@ BEGIN {
     my $sth2 = eval { $dbh->prepare( 'SELECT * FROM mytable' ) };
     ok(!defined($sth2), '... we should get nothing back from here');
     
-    is($@, 
-        qq(Failed to parse statement. Error: incorrect use of '*'. Statement: SELECT * FROM mytable\n), 
+    like($@, 
+        qr/Failed to parse statement\. Error\: incorrect use of \'\*\'\. Statement\: SELECT \* FROM mytable/, 
         '... parser failure generated correct error');
         
     $dbh->disconnect();
@@ -77,7 +77,7 @@ BEGIN {
     isa_ok($sth1, "DBI::st");
      
     { # isolate the warn handler 
-        $SIG{__WARN__} = sub {
+        local $SIG{__WARN__} = sub {
             my $msg = shift;
             like($msg, 
                  qr/incorrect use of \'\*\'\. Statement\: SELECT \* FROM mytable/,  #'
@@ -121,7 +121,7 @@ BEGIN {
     cmp_ok($dbh->{PrintError}, '==', 1, '... make sure PrintError is set correctly');
     
     { # isolate the warn handler 
-        $SIG{__WARN__} = sub {
+        local $SIG{__WARN__} = sub {
             my $msg = shift;
             like($msg, 
                  qr/Parser must be a code reference or /, 

@@ -19,7 +19,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.27';
+our $VERSION = '1.28';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;		# will hold any error codes
@@ -41,17 +41,6 @@ sub driver {
 }
 
 sub CLONE { undef $drh }
-
-sub _error_handler {
-    my ($dbh, $error) = @_;
-    $dbh->DBI::set_err(1, $error);
-    if ($dbh->{'PrintError'}) {
-        warn "$error\n";
-    }
-    elsif ($dbh->{'RaiseError'}) {
-        die "$error\n";
-    }
-}
 
 # NOTE:
 # this feature is still quite experimental. It is defaulted to
@@ -182,7 +171,7 @@ sub prepare {
     if ($@) {
         my $parser_error = $@;
         chomp $parser_error;
-        DBD::Mock::_error_handler($dbh, "Failed to parse statement. Error: ${parser_error}. Statement: ${statement}");
+        $dbh->DBI::set_err(1, "Failed to parse statement. Error: ${parser_error}. Statement: ${statement}");
         return undef;
     }
     
@@ -193,7 +182,7 @@ sub prepare {
         if ($@) {
             my $session_error = $@;
             chomp $session_error;
-            DBD::Mock::_error_handler($dbh, "Session Error: ${session_error}. Statement: ${statement}");
+            $dbh->DBI::set_err(1, "Session Error: ${session_error}. Statement: ${statement}");
             return undef;
         }        
     }    
@@ -235,7 +224,7 @@ sub prepare {
  	# connection present.
 
     unless ($dbh->FETCH('Active')) {
-        DBD::Mock::_error_handler($dbh, "No connection present");
+        $dbh->DBI::set_err(1, "No connection present");
         return undef;
     }
 
@@ -322,7 +311,7 @@ sub STORE {
         unless ($is_valid_parser) {
             my $error = "Parser must be a code reference or object with 'parse()' " .
                         "method (Given type: '$parser_type')";
-            DBD::Mock::_error_handler($dbh, $error);
+            $dbh->DBI::set_err(1, $error);
             return undef;
         }
         push @{$dbh->{mock_parser}}, $value;
@@ -401,7 +390,7 @@ sub execute {
     my ($sth, @params) = @_;
 
     unless ($sth->{Database}->{mock_can_connect}) {
-        DBD::Mock::_error_handler($sth->{Database}, "No connection present");
+        $sth->{Database}->DBI::set_err(1, "No connection present");
         return 0;
     }
 
@@ -418,7 +407,7 @@ sub execute {
         if ($@) {
             my $session_error = $@;
             chomp $session_error;
-            DBD::Mock::_error_handler($dbh, "Session Error: ${session_error}");
+            $dbh->DBI::set_err(1, "Session Error: ${session_error}");
             return undef;
         }        
     }
@@ -433,7 +422,7 @@ sub fetch {
     my ($sth) = @_;
 
     unless ($sth->{Database}->{mock_can_connect}) {
-        DBD::Mock::_error_handler($sth->{Database}, "No connection present");
+        $sth->{Database}->DBI::set_err(1, "No connection present");
         return undef;
     }
 

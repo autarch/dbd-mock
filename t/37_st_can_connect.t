@@ -32,7 +32,7 @@ ok(!$dbh->ping(), '... and ping returns false');
 
 eval { $sth_exec->execute() };
 ok($@, '... we got an exception');
-like($@, qr/^No connection present/, '... we got the expected execption');
+like($@, qr/No connection present/, '... we got the expected execption');
 
 # turn off the database between execute and fetch
 

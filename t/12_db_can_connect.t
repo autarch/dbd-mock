@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 23;
+use Test::More tests => 22;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -35,7 +35,7 @@ BEGIN {
     ok($@, '... we should have an exception');
     
     like($@, 
-        qr/^No connection present/,
+        qr/No connection present/,
         'Preparing statement against inactive handle throws expected exception' );
         
     like($dbh->errstr, 
@@ -68,7 +68,7 @@ BEGIN {
     ok(!$dbh->ping(), '...and unsuccessfuly pinged handle (good)');    
 
     { # isolate the warn handler 
-        $SIG{__WARN__} = sub {
+        local $SIG{__WARN__} = sub {
             my $msg = shift;
             like($msg, qr/No connection present/, '...got the expected warning');
         };

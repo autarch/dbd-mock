@@ -100,7 +100,7 @@ use DBI;
         Login::Test::login($dbh, 'user', '****')
     };
     ok($@, '... got the exception');
-    like($@, qr/^Session Error\: Session states exhausted/, '... got the exception we expected');
+    like($@, qr/Session Error\: Session states exhausted/, '... got the exception we expected');
     
     # reset the DBD::Mock::Session object
     $successful_login->reset;
@@ -204,7 +204,7 @@ use DBI;
         Login::Test::login($dbh, 'user', '****');
     };
     ok(defined($@), '... got an error, as expected');
-    like($@, qr/^Session Error\: Session states exhausted\, /, '... got the error we expected');    
+    like($@, qr/Session Error\: Session states exhausted\, /, '... got the error we expected');    
     
 }
 

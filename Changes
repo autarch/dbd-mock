@@ -1,5 +1,12 @@
 Revision history for Perl extension DBD::Mock.
 
+0.25 Sat Feb 26 2005
+    - removed the DBD::Mock::_error_handler routine
+      since it was actually redundant with the DBI::set_err
+      method. This was actually the source of the RT Bug #11515
+      which was found by Shlomi Fish (thanks Shlomi)
+        - adjusted some tests for this fix
+
 0.24 Fri Jan 28 2005
     - added the reset() method to the DBD::Mock::Session
       object so that a session can be used more than once.
