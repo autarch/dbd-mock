@@ -1,32 +1,67 @@
 Revision history for Perl extension DBD::Mock.
 
+0.22 Mon Jan 24 2005
+    - added the 'mock_connect_fail' boolean attribute 
+      for the DBD::Mock driver handle, this will prevent
+      DBI from connecting. It can be used to simulate a
+      bad DSN or something like that. 
+        - added tests and documentation for this.
+        - Thanks to Justin DeVuyst for this idea.
+
+0.21 Sun Jan 16 2005
+    > DBD::Mock::Session
+    
+    - added the optional 'bound_params' slot for the 
+      DBD::Mock::Session object
+        - added tests for this
+        - added documentation for this
+        
+    - added error to handle cases where there are not 
+      enough states in a DBD::Mock::Session object.
+        - added tests for this
+        - added documentation for this
+        
+    - added the ability to remove a session (by setting
+      it to a false value)
+        - added tests for this
+        - added documenation for this
+
+    > DBD::Mock
+
+    - added test to check about overwriting hash-based 
+      result sets with 'mock_add_resultset' attribute
+        - added documentation for this
+
 0.20 Fri Jan 14 2005
-    - Modified a set of tests in t/10_db_handle.t to pass on Cygwin
+    - Modified a set of tests in t/10_db_handle.t to pass on Cygwin.
+      Thanks to Rob Kinyon for this code. This code now uses File::Temp
+      to make the temp log file in a cross platform manner. If File::Temp
+      is not found on the system, then the tests are skipped.
       
 0.19 Fri Jan 7 2005
     - changed the VERSION in lib/DBD/Mock.pm to be 1.23, allow me to explain...
       
-        Chris Winters (the original author) used the CVS derived 
-        VERSION, which when I took over the module (8 versions ago) 
-        was at 1.15. Since I was not using Chris's CVS repo to store this
-        I decided to give Mock.pm the VERSION number found in the VERSION
-        file. 
-        
-        Well,... PAUSE's indexer doesn't like it since it is a lower
-        number and would complain every time I uploaded a new version.
-        I ignored these complaints (at my own peril) until now. 
-        
-        I found out recently that if you had version 0.11 or below installed 
-        (where the Mock.pm was version 1.15 or below), then installing through 
-        the CPAN shell would tell you DBD::Mock was up to date, even though it 
-        wasn't. So in order to fix this issue, and make sure that all those who
-        want to install and update DBD::Mock easily, I changed the version
-        number of DBD::Mock to be 1.23 to reflect the number of updates
-        I have done since Chris handed it over to me. 
-        
-        *sigh*
-        
-        Okay good, thats off my chest now.
+      Chris Winters (the original author ) used the CVS derived 
+      VERSION, which when I took over the module (8 versions ago) 
+      was at 1.15. Since I was not using Chris's CVS repo to store this
+      I decided to give Mock.pm the VERSION number found in the VERSION
+      file. 
+    
+      Well,... PAUSE's indexer doesn't like it since it is a lower
+      number and would complain every time I uploaded a new version.
+      I ignored these complaints (at my own peril) until now. 
+    
+      I found out recently that if you had version 0.11 or below installed 
+      (where the Mock.pm was version 1.15 or below), then installing through  
+      the CPAN shell would tell you DBD::Mock was up to date, even though it 
+      wasn't. So in order to fix this issue, and make sure that all those who
+      want to install and update DBD::Mock easily, I changed the version
+      number of DBD::Mock to be 1.23 to reflect the number of updates
+      I have done since Chris handed it over to me. 
+    
+      *sigh*
+    
+      Okay good, thats off my chest now.
 
 0.18 Wed Jan 5 2005
     - added reset() method to the 

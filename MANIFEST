@@ -17,6 +17,7 @@ t/20_st_execute_empty.t
 t/25_st_execute_bound_params.t
 t/30_st_execute_pass_params.t
 t/35_st_fetch_records.t
+t/36_mock_add_resultset_test.t
 t/37_st_can_connect.t
 t/40_mock_statement_track.t
 t/45_mock_statement_track_iterator.t
