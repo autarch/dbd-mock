@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 11;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -39,6 +39,32 @@ $dbh->{mock_add_resultset} = {
     results => [[ 'foo' ], [ 50 ]]
 };
 
+{
+    my $sth = $dbh->prepare('SELECT foo FROM bar');
+    isa_ok($sth, 'DBI::st');
+
+    $sth->execute();
+    my ($result) = $sth->fetchrow_array();
+
+    cmp_ok($result, '==', 50, '... got the result we expected');
+    
+    $sth->finish();
+}
+
+# get it again
+{
+    my $sth = $dbh->prepare('SELECT foo FROM bar');
+    isa_ok($sth, 'DBI::st');
+
+    $sth->execute();
+    my ($result) = $sth->fetchrow_array();
+
+    cmp_ok($result, '==', 50, '... got the result we expected');
+    
+    $sth->finish();
+}
+
+# and one more time for good measure
 {
     my $sth = $dbh->prepare('SELECT foo FROM bar');
     isa_ok($sth, 'DBI::st');

@@ -19,7 +19,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.25';
+our $VERSION = '1.27';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;		# will hold any error codes
@@ -211,7 +211,9 @@ sub prepare {
     my $rs;
     if ( my $all_rs = $dbh->{mock_rs} ) {
         if ( my $by_name = $all_rs->{named}{$statement} ) {
-            $rs = $by_name;
+            # we want to copy this, becauase
+            # it is meant to be reusable
+            $rs = [ @{$by_name} ];
         }
         else {
             $rs = shift @{$all_rs->{ordered}};
@@ -777,7 +779,8 @@ sub new {
             } => $class;
 }
 
-sub name { (shift)->{name} }
+sub name  { (shift)->{name} }
+sub reset { (shift)->{state_index} = 0 }
 
 sub verify_statement {
     my ($self, $dbh, $statement) = @_;
@@ -808,7 +811,9 @@ sub verify_statement {
     }
     # if we are hear then things worked out well :)
 #    print STDERR "Adding Results: " . (join " | " => map { join ", " => @{$_} } @{$current_state->{results}}) . "\n";
-    $dbh->STORE('mock_add_resultset' => $current_state->{results});
+    # copy the result sets so that 
+    # we can re-use the session 
+    $dbh->STORE('mock_add_resultset' => [ @{$current_state->{results}} ]);
 }
 
 sub verify_bound_params {
@@ -999,6 +1004,8 @@ This is a boolean property which when set to true (C<1>) will not allow DBI to c
   
   # this will work now ...
   my $dbh = DBI->connect(...);
+  
+This feature is conceptually different from the 'mock_can_connect' attribute of the C<$dbh> in that it has a driver-wide scope, where 'mock_can_connect' is handle-wide scope. It also only prevents the initial connection, any C<$dbh> handles created prior to setting 'mock_connect_fail' to true (C<1>) will still go on working just fine.
 
 =back
 
@@ -1451,6 +1458,10 @@ This will check the C<$SQL> against the current state's 'statement' value, and i
 B<verify_bound_params ($dbh, $params)>
 
 If the 'bound_params' slot is available in the current state, this will check the C<$params> against the current state's 'bound_params' value. Both number of parameters and the parameters themselves must match, or an error will be raised.
+
+B<reset>
+
+Calling this method will reset the state of the session object so that it can be reused.
 
 =back
 

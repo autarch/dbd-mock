@@ -1,5 +1,31 @@
 Revision history for Perl extension DBD::Mock.
 
+0.24 Fri Jan 28 2005
+    - added the reset() method to the DBD::Mock::Session
+      object so that a session can be used more than once.
+        - added tests for this
+        - added docs for this
+    - fixed a bug where the HASH version of 'mock_add_resultset'
+      would consume the result sets and they would not be 
+      reusable. We now copy the result sets so that every time
+      the statement is called the same results are returned
+        - did not need to add docs for this, they already 
+          documented this as the behavior (hence calling this
+          a bug)
+        - added tests for this
+
+0.23 Tues Jan 25 2005
+    - removed the trace log tests from t/10_db_handle.t
+      since they seemed to be a source of issues on Win32.
+      My rationale is that it is a DBI thing, and therefore
+      does not need to be tested by DBD::Mock. 
+
+    - added a few more tests to t/11_dr_handle.t to test the
+      'mock_connect_fail' feature
+      
+    - added some clarification in the docs about the 
+      'mock_connect_fail' feature as well.
+
 0.22 Mon Jan 24 2005
     - added the 'mock_connect_fail' boolean attribute 
       for the DBD::Mock driver handle, this will prevent

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 53;
+use Test::More tests => 56;
 
 BEGIN {
     use_ok('DBD::Mock');
@@ -92,6 +92,21 @@ use DBI;
 	$dbh->{mock_session} = $successful_login;
 	
 	is(Login::Test::login($dbh, 'user', '****'), 'LOGIN SUCCESSFUL', '... logged in successfully');
+    
+    # check the reusablity
+    
+    # it is not reusable now
+    eval {
+        Login::Test::login($dbh, 'user', '****')
+    };
+    ok($@, '... got the exception');
+    like($@, qr/^Session Error\: Session states exhausted/, '... got the exception we expected');
+    
+    # reset the DBD::Mock::Session object
+    $successful_login->reset;
+    
+    # and it is re-usable now
+    is(Login::Test::login($dbh, 'user', '****'), 'LOGIN SUCCESSFUL', '... logged in successfully');
 }
 
 {

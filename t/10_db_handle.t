@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 22;
+use Test::More tests => 14;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -41,62 +41,35 @@ BEGIN {
 # test setting attributes post-connect
 
 {
-    my $trace_log = 'tmp_dbi_trace.log';
     
     my $dbh = DBI->connect( 'DBI:Mock:', '', '' );
     $dbh->{RaiseError} = 1;
     $dbh->{PrintError} = 1;
     $dbh->{AutoCommit} = 1;
-    $dbh->trace( 2, $trace_log );    
-    ok(-f $trace_log, '... the trace log file has been created');    
+   
     cmp_ok( $dbh->{RaiseError}, '==', 1,
         'RaiseError DB attribute set after connect()' );
     cmp_ok( $dbh->{PrintError}, '==', 1,
         'PrintError DB attribute set after connect()' );
     cmp_ok( $dbh->{AutoCommit}, '==', 1,
         'AutoCommit DB attribute set after connect()' );
-    cmp_ok( $dbh->{TraceLevel}, '==', 2,
-        'TraceLevel DB attribute set after connect()' );
- 
-     cmp_ok(unlink($trace_log), '==', 1, "... removing the trace log file" );
-     ok(!-e $trace_log, "... the trace log file is actually gone" );
-    
+            
     $dbh->disconnect();       
 }
 
 # test setting them during connect
 
-SKIP: {
-    eval { 
-        require File::Temp;
-        File::Temp->import( 'tempfile' );
-    };
-    skip "Cannot load File::Temp", 7 if $@;
-
-    (undef, my $trace_log) = do {
-        local $^W; # Disable warning about unsafe tempfile() call
-        tempfile( 'dbd_mock_test_XXXX', OPEN => 0 );
-    };
-    
-    open STDERR, "> $trace_log";
-    ok(-f $trace_log, '... the trace log file has been created');
+{
     my $dbh = DBI->connect( 'DBI:Mock:', '', '',
                             { RaiseError => 1,
                               PrintError => 1,
-                              AutoCommit => 1,
-                              TraceLevel => 2 } );
+                              AutoCommit => 1 } );
     cmp_ok( $dbh->{RaiseError}, '==', 1,
         'RaiseError DB attribute set in connect()' );
     cmp_ok( $dbh->{PrintError}, '==', 1,
         'PrintError DB attribute set in connect()' );
     cmp_ok( $dbh->{AutoCommit}, '==', 1,
         'AutoCommit DB attribute set in connect()' );
-    cmp_ok( $dbh->{TraceLevel}, '==', 2,
-        'TraceLevel DB attribute set in connect()' );       
-        
-    close STDERR;
-    cmp_ok(unlink($trace_log), '==', 1, "... removing the trace log file" );
-    ok(!-e $trace_log, "... the trace log file is actually gone" );
 
     $dbh->disconnect();   
 }

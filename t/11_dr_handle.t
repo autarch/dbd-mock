@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 20;
+use Test::More tests => 22;
 
 BEGIN {
     use_ok('DBD::Mock');
@@ -41,6 +41,11 @@ is($drh->data_sources(), 'DBI:Mock:', '... got the expected data sources');
 { # check the mock_connect_fail attribute
     cmp_ok($drh->{mock_connect_fail}, '==', 0, '... the default is set not to fail');
 
+    # make sure the this only affects the initial connect
+    my $_dbh = DBI->connect('dbi:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
+    isa_ok($_dbh, 'DBI::db');
+
+    # now no more connections
     $drh->{mock_connect_fail} = 1;
     cmp_ok($drh->{mock_connect_fail}, '==', 1, '... we are set to fail');
     
@@ -51,6 +56,10 @@ is($drh->data_sources(), 'DBI:Mock:', '... got the expected data sources');
     like($@, 
          qr/^DBI connect\(\'\'\,\'\'\,\.\.\.\) failed\: Could not connect to mock database/, #'
          '... got the error we expected too');
+         
+    # make sure the handle we created before the change works     
+    eval { $_dbh->prepare( "SELECT foo FROM bar" ) };
+    ok(!$@, '... we should not have an exception here');
     
     $drh->{mock_connect_fail} = 0;
     cmp_ok($drh->{'mock_connect_fail'}, '==', 0, '... we are set not to fail');
