@@ -76,7 +76,7 @@ is($sth->{mock_is_finished}, 'no', '... we are not yet finished');
 ok(!$sth->{mock_is_depleted}, '... nor are we depleted');
 
 for (1 .. 3) {
-    cmp_ok($sth->fetchrow_array(), '==', $_, '... got the expected row');
+    cmp_ok(($sth->fetchrow_array())[0], '==', $_, '... got the expected row');
     cmp_ok($sth->{mock_current_record_num}, '==', $_, '... we are at record number ' . $_);    
 }
 

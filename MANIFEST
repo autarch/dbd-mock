@@ -13,7 +13,9 @@ t/13_misc_mock_attr.t
 t/14_db_parser.t
 t/15_prepare_cached.t
 t/16_mock_attribute_aliases.t
+t/17_db_connect_cached.t
 t/20_st_execute_empty.t
+t/21_st_handle.t
 t/25_st_execute_bound_params.t
 t/30_st_execute_pass_params.t
 t/35_st_fetch_records.t
@@ -23,4 +25,5 @@ t/40_mock_statement_track.t
 t/45_mock_statement_track_iterator.t
 t/50_db_pool.t
 t/60_DBD_Mock_Session_test.t
+t/61_DBD_Mock_Session_bound_params_test.t
 t/pod.t

@@ -1,5 +1,11 @@
 Revision history for Perl extension DBD::Mock.
 
+0.26
+    - Rob Kinyon added ...
+    - added bind_param_inout() for DBD::Mock::st 
+      code from Thilo Planz (Thanks Thilo)
+        - added tests for this
+
 0.25 Sat Feb 26 2005
     - removed the DBD::Mock::_error_handler routine
       since it was actually redundant with the DBI::set_err

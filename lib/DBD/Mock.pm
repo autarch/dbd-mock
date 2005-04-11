@@ -28,6 +28,7 @@ our $errstr = '';       # will hold any error messages
 sub driver {
     return $drh if defined $drh;
     my ($class, $attributes) = @_;
+    $attributes = {} unless (defined($attributes) && (ref($attributes) eq 'HASH'));
     $drh = DBI::_new_drh( "${class}::dr", {
         Name        => 'Mock',
         Version     => $DBD::Mock::VERSION,
@@ -36,6 +37,8 @@ sub driver {
  		Errstr      => \$DBD::Mock::errstr,
         # mock attributes
         mock_connect_fail => 0,
+        # and pass in any extra attributes given
+        %{$attributes}
     });
     return $drh;
 }
@@ -386,6 +389,19 @@ sub bind_param {
     return 1;
 }
 
+sub bind_param_inout {
+	my ($sth, $param_num, $val, $max_len) = @_;
+	# check that $val is a scalar ref
+	(UNIVERSAL::isa($val, 'SCALAR')) 
+	    || $sth->{Database}->DBI::set_err(1, "need a scalar ref to bind_param_inout, not $val");
+	# check for positive $max_len
+	($max_len > 0) 
+	    || $sth->{Database}->DBI::set_err(1, "need to specify a maximum length to bind_param_inout");
+	my $tracker = $sth->FETCH( 'mock_my_history' );
+	$tracker->bound_param( $param_num, $val );
+	return 1;
+}
+
 sub execute {
     my ($sth, @params) = @_;
 
@@ -420,14 +436,23 @@ sub execute {
 
 sub fetch {
     my ($sth) = @_;
-
     unless ($sth->{Database}->{mock_can_connect}) {
         $sth->{Database}->DBI::set_err(1, "No connection present");
         return undef;
     }
-
+    
     my $tracker = $sth->FETCH( 'mock_my_history' );
     return $tracker->next_record;
+}
+
+sub fetchrow_array {
+    my ($sth) = @_;
+    return @{$sth->DBD::Mock::st::fetch()};
+}
+
+sub fetchrow_arrayref {
+    my ($sth) = @_;
+    return $sth->DBD::Mock::st::fetch();  
 }
 
 sub finish {
@@ -445,9 +470,30 @@ sub FETCH {
     $sth->trace_msg( "Fetching ST attribute '$attrib'\n" );
     my $tracker = $sth->{mock_my_history};
     $sth->trace_msg( "Retrieved tracker: " . ref( $tracker ) . "\n" );
+    # NAME attributes
     if ( $attrib eq 'NAME' ) {
-        return $tracker->fields;
+        return [ @{$tracker->fields} ];
     }
+    elsif ( $attrib eq 'NAME_lc' ) {
+        return [ map { lc($_) } @{$tracker->fields} ];
+    }    
+    elsif ( $attrib eq 'NAME_uc' ) {
+        return [ map { uc($_) } @{$tracker->fields} ];
+    }    
+    # NAME_hash attributes    
+    elsif ( $attrib eq 'NAME_hash' ) {
+        my $i = 0;
+        return { map { $_ => $i++ } @{$tracker->fields} };
+    }
+    elsif ( $attrib eq 'NAME_hash_lc' ) {
+        my $i = 0;
+        return { map { lc($_) => $i++ } @{$tracker->fields} };
+    }    
+    elsif ( $attrib eq 'NAME_hash_uc' ) {
+        my $i = 0;
+        return { map { uc($_) => $i++ } @{$tracker->fields} };
+    }   
+    # others    
     elsif ( $attrib eq 'NUM_OF_FIELDS' ) {
         return $tracker->num_fields;
     }
@@ -516,7 +562,7 @@ sub STORE {
     if ($attrib =~ /^mock/) {
         return $sth->{$attrib} = $value;
     }
-    elsif ($attrib eq 'NAME') {
+    elsif ($attrib =~ /^NAME/) {
         # no-op...
         return;
     }
@@ -1530,13 +1576,15 @@ L<Test::MockObject>, which provided the approach
 
 Test::MockObject article - L<http://www.perl.com/pub/a/2002/07/10/tmo.html>
 
-=head1 ACKNOWLEDGEMENTS  
+=head1 ACKNOWLEDGEMENTS
 
 =over 4
 
 =item Thanks to Rob Kinyon for many ideas, thoughts and discussions about DBD::Mock
 
 =item Thanks to Justin DeVuyst for the mock_connect_fail idea
+
+=item Thanks to Thilo Planz for the code for C<bind_param_inout>
 
 =back
 
