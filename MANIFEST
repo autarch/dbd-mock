@@ -1,6 +1,7 @@
 Changes
 Makefile.PL
 MANIFEST
+MANIFEST.SKIP
 META.yml
 README
 VERSION
@@ -14,6 +15,7 @@ t/14_db_parser.t
 t/15_prepare_cached.t
 t/16_mock_attribute_aliases.t
 t/17_db_connect_cached.t
+t/18_info.t
 t/20_st_execute_empty.t
 t/21_st_handle.t
 t/25_st_execute_bound_params.t
