@@ -1,7 +1,8 @@
 Revision history for Perl extension DBD::Mock.
 
-0.26
-    - Rob Kinyon added ...
+0.26 Fri Apr 08 2005
+    - Added get_info() and set_info()
+        - Added tests for this
     - added bind_param_inout() for DBD::Mock::st 
       code from Thilo Planz (Thanks Thilo)
         - added tests for this

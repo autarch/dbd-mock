@@ -19,7 +19,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.28';
+our $VERSION = '1.29';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;		# will hold any error codes
@@ -156,6 +156,12 @@ $DBD::Mock::db::imp_data_size = 0;
 sub ping {
  	my ( $dbh ) = @_;
  	return $dbh->{mock_can_connect};
+}
+
+sub get_info {
+    my ( $dbh, $attr ) = @_;
+    $dbh->{mock_get_info} ||= {};
+    return $dbh->{mock_get_info}{ $attr };
 }
 
 sub prepare {
@@ -1205,6 +1211,10 @@ It should also be noted that the C<rows> method will return the number of record
   };
  
 Now I admit this is not the most elegant way to go about this, but it works for me for now, and until I can come up with a better method, or someone sends me a patch ;) it will do for now.
+
+=item B<mock_get_info>
+
+This attribute can be used to set up values for get_info(). It takes a hashref of attribute_name/value pairs. See L<DBI> for more information on the information types and their meaning.
 
 =item B<mock_session>
 
