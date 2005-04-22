@@ -256,17 +256,38 @@ sub prepare {
 
 sub begin_work {
     my $dbh = shift;
-    return $dbh->prepare( 'BEGIN WORK' );
+    # if AutoCommit is on
+    if ($dbh->FETCH('AutoCommit')) { 
+        # turn it off...
+        $dbh->STORE('AutoCommit', 0);
+        return $dbh->prepare( 'BEGIN WORK' );        
+    }
+    else {
+        $dbh->DBI::set_err(1, 'AutoCommit is off, you are already within a transaction');
+        return undef;            
+    }
 }
 
 sub commit {
     my $dbh = shift;
-    return $dbh->prepare( 'COMMIT' );
+    if ($dbh->FETCH('AutoCommit')) {
+        $dbh->DBI::set_err(1, 'commit ineffective with AutoCommit');
+        return undef;
+    }    
+    my $sth = $dbh->prepare( 'COMMIT' );
+    $dbh->STORE('AutoCommit', 1);
+    return $sth;
 }
 
 sub rollback {
     my $dbh = shift;
-    return $dbh->prepare( 'ROLLBACK' );
+    if ($dbh->FETCH('AutoCommit')) {
+        $dbh->DBI::set_err(1, 'rollback ineffective with AutoCommit');
+        return undef;
+    }    
+    my $sth = $dbh->prepare( 'ROLLBACK' );
+    $dbh->STORE('AutoCommit', 1);
+    return $sth;    
 }
 
 sub FETCH {
@@ -1625,11 +1646,11 @@ Test::MockObject article - L<http://www.perl.com/pub/a/2002/07/10/tmo.html>
 
 =over 4
 
-=item Thanks to Rob Kinyon for many ideas, thoughts and discussions about DBD::Mock
-
 =item Thanks to Justin DeVuyst for the mock_connect_fail idea
 
 =item Thanks to Thilo Planz for the code for C<bind_param_inout>
+
+=item Thanks to Shlomi Fish for help tracking down RT Bug #11515
 
 =back
 
@@ -1645,3 +1666,7 @@ it under the same terms as Perl itself.
 Chris Winters E<lt>chris@cwinters.comE<gt>
 
 Stevan Little E<lt>stevan@iinteractive.comE<gt>
+
+Rob Kinyon E<lt>rob.kinyon@gmail.comE<gt>
+
+=cut
