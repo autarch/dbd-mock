@@ -254,6 +254,21 @@ sub prepare {
 
 *prepare_cached = \&prepare;
 
+sub begin_work {
+    my $dbh = shift;
+    return $dbh->prepare( 'BEGIN WORK' );
+}
+
+sub commit {
+    my $dbh = shift;
+    return $dbh->prepare( 'COMMIT' );
+}
+
+sub rollback {
+    my $dbh = shift;
+    return $dbh->prepare( 'ROLLBACK' );
+}
+
 sub FETCH {
     my ( $dbh, $attrib ) = @_;
     $dbh->trace_msg( "Fetching DB attrib '$attrib'\n" );
@@ -1254,6 +1269,26 @@ Instead of providing a subroutine reference you can use an object. The only requ
 
   my $parser = SQL::Parser->new( 'mysql', { RaiseError => 1 } );
   $dbh->{mock_add_parser} = $parser;
+
+=back
+
+=head2 Database Driver Methods
+
+In order to capture begin_work(), commit(), and rollback(), DBD::Mock will create statements for them, as if you had issued them in the appropriate SQL command line program. They will go through the standard prepare()-execute() cycle, meaning that any custom SQL parsers will be triggered and DBD::Mock::Session will need to know about these statements.
+
+=over 4
+
+=item B<begin_work>
+
+This will create a statement with SQL of "BEGIN WORK" and no parameters.
+
+=item B<commit>
+
+This will create a statement with SQL of "COMMIT" and no parameters.
+
+=item B<rollback>
+
+This will create a statement with SQL of "ROLLBACK" and no parameters.
 
 =back
 
