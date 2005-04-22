@@ -254,40 +254,49 @@ sub prepare {
 
 *prepare_cached = \&prepare;
 
-sub begin_work {
-    my $dbh = shift;
-    # if AutoCommit is on
-    if ($dbh->FETCH('AutoCommit')) { 
-        # turn it off...
-        $dbh->STORE('AutoCommit', 0);
-        return $dbh->prepare( 'BEGIN WORK' );        
+{
+    my $begin_work_commit;
+    sub begin_work {
+        my $dbh = shift;
+        if ($dbh->FETCH('AutoCommit')) { 
+            $dbh->STORE('AutoCommit', 0);
+            $begin_work_commit = 1;
+            return $dbh->prepare( 'BEGIN WORK' );        
+        }
+        else {
+            return $dbh->set_err(1, 'AutoCommit is off, you are already within a transaction');
+        }
     }
-    else {
-        $dbh->DBI::set_err(1, 'AutoCommit is off, you are already within a transaction');
-        return undef;            
+
+    sub commit {
+        my $dbh = shift;
+        if ($dbh->FETCH('AutoCommit') && $dbh->FETCH('Warn')) {
+            return $dbh->set_err(1, "commit ineffective with AutoCommit" );
+        }    
+        my $sth = $dbh->prepare( 'COMMIT' );
+
+        if ($begin_work_commit) {
+            $dbh->STORE('AutoCommit', 1);
+            $begin_work_commit = 0;
+        }
+
+        return $sth;
     }
-}
 
-sub commit {
-    my $dbh = shift;
-    if ($dbh->FETCH('AutoCommit')) {
-        $dbh->DBI::set_err(1, 'commit ineffective with AutoCommit');
-        return undef;
-    }    
-    my $sth = $dbh->prepare( 'COMMIT' );
-    $dbh->STORE('AutoCommit', 1);
-    return $sth;
-}
+    sub rollback {
+        my $dbh = shift;
+        if ($dbh->FETCH('AutoCommit') && $dbh->FETCH('Warn')) {
+            return $dbh->set_err(1, "rollback ineffective with AutoCommit" );
+        }    
+        my $sth = $dbh->prepare( 'ROLLBACK' );
 
-sub rollback {
-    my $dbh = shift;
-    if ($dbh->FETCH('AutoCommit')) {
-        $dbh->DBI::set_err(1, 'rollback ineffective with AutoCommit');
-        return undef;
-    }    
-    my $sth = $dbh->prepare( 'ROLLBACK' );
-    $dbh->STORE('AutoCommit', 1);
-    return $sth;    
+        if ($begin_work_commit) {
+            $dbh->STORE('AutoCommit', 1);
+            $begin_work_commit = 0;
+        }
+
+        return $sth;
+    }
 }
 
 sub FETCH {
