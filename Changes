@@ -1,11 +1,19 @@
 Revision history for Perl extension DBD::Mock.
 
 0.26 Fri Apr 08 2005
-    - Added get_info() and set_info()
-        - Added tests for this
+    - added Rob Kinyon to the AUTHORS list 
+    - added get_info() and set_info() 
+        - added tests for this
     - added bind_param_inout() for DBD::Mock::st 
       code from Thilo Planz (Thanks Thilo)
         - added tests for this
+    - added mock_data_sources and mock_add_data_sources 
+      properties for the Driver and Database handles
+        - added tests and docs for this
+    - added begin_work(), commit() and rollback() method
+      implementations which wrap the prepare() method and
+      deal with the AutoCommit value per the DBI spec.
+        - added tests and docs for this
 
 0.25 Sat Feb 26 2005
     - removed the DBD::Mock::_error_handler routine

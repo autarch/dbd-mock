@@ -118,20 +118,52 @@ sub connect {
     return $dbh;
 }
 
+sub FETCH {
+    my ($drh, $attr) = @_;
+    if ($attr =~ /^mock_/) {
+        if ($attr eq 'mock_connect_fail') {
+            return $drh->{'mock_connect_fail'};       
+        }
+        elsif ($attr eq 'mock_data_sources') {
+            unless (defined $drh->{'mock_data_sources'}) {
+                $drh->{'mock_data_sources'} = [ 'DBI:Mock:' ];
+            }
+            return $drh->{'mock_data_sources'};         
+        }
+        else {
+            return $drh->SUPER::FETCH($attr);
+        }
+    }    
+    else {
+        return $drh->SUPER::FETCH($attr);
+    }
+}
+
 sub STORE {
     my ($drh, $attr, $value) = @_;
     if ($attr =~ /^mock_/) {
         if ($attr eq 'mock_connect_fail') {
             return $drh->{'mock_connect_fail'} = $value ? 1 : 0;        
         }
-    }
+        elsif ($attr eq 'mock_data_sources') {
+            if (ref($value) ne 'ARRAY') {
+                $drh->DBI::set_err(1, "You must pass an array ref of data sources");
+                return undef;
+            }
+            return $drh->{'mock_data_sources'} = $value;
+        }
+        elsif ($attr eq 'mock_add_data_sources') {
+            return push @{$drh->{'mock_data_sources'}} => $value;            
+        }
+    }    
     else {
         return $drh->SUPER::STORE($attr, $value);
     }
 }
 
 sub data_sources {
-	return ("DBI:Mock:");
+    my $drh = shift;
+	return map { (/^DBI\:Mock\:/i) ? $_ : "DBI:Mock:$_" } @{$drh->FETCH('mock_data_sources')};
 }
 
 # Necessary to support DBI < 1.34
@@ -406,6 +438,9 @@ sub STORE {
                 if defined $value;
         $dbh->{mock_session} = $value;        
     }
+    elsif ($attrib =~ /^mock_(add_)?data_sources/) {
+        $dbh->{Driver}->STORE($attrib, $value);
+    }    
     elsif ($attrib =~ /^mock/) {  
         return $dbh->{$attrib} = $value;
     }
@@ -1093,6 +1128,14 @@ This is a boolean property which when set to true (C<1>) will not allow DBI to c
   
 This feature is conceptually different from the 'mock_can_connect' attribute of the C<$dbh> in that it has a driver-wide scope, where 'mock_can_connect' is handle-wide scope. It also only prevents the initial connection, any C<$dbh> handles created prior to setting 'mock_connect_fail' to true (C<1>) will still go on working just fine.
 
+=item B<mock_data_sources>
+
+This is an ARRAY reference which holds fake data sources which are returned by the Driver and Database Handle's C<data_source()> method.
+
+=item B<mock_add_data_sources>
+
+This takes a string and adds it to the 'mock_data_sources' attribute.
+
 =back
 
 =head2 Database Handle Properties
@@ -1299,6 +1342,10 @@ Instead of providing a subroutine reference you can use an object. The only requ
 
   my $parser = SQL::Parser->new( 'mysql', { RaiseError => 1 } );
   $dbh->{mock_add_parser} = $parser;
+
+=item B<mock_data_sources> & B<mock_add_data_sources>
+
+These properties will dispatch to the Driver's properties of the same name.
 
 =back
 
@@ -1636,9 +1683,9 @@ I use L<Devel::Cover> to test the code coverage of my tests, below is the L<Deve
  ---------------------------- ------ ------ ------ ------ ------ ------ ------
  File                           stmt branch   cond    sub    pod   time  total
  ---------------------------- ------ ------ ------ ------ ------ ------ ------
- lib/DBD/Mock.pm                90.7   86.6   82.6   94.2    0.0  100.0   89.1
+ DBD/Mock.pm                    93.2   88.4   77.2   94.8    0.0  100.0   90.7
  ---------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                          90.7   86.6   82.6   94.2    0.0  100.0   89.1
+ Total                          93.2   88.4   77.2   94.8    0.0  100.0   90.7
  ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO

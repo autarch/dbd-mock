@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 14;
+use Test::More tests => 16;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -72,4 +72,21 @@ BEGIN {
         'AutoCommit DB attribute set in connect()' );
 
     $dbh->disconnect();   
+}
+
+
+{
+    my $dbh = DBI->connect( 'DBI:Mock:', '', '' );
+    is_deeply(
+        [ $dbh->data_sources() ],
+        [ 'DBI:Mock:' ],
+        '... got the right data sources');
+        
+    $dbh->{'mock_add_data_sources'} = 'foo';
+    
+    is_deeply(
+        [ $dbh->data_sources() ],
+        [ 'DBI:Mock:', 'DBI:Mock:foo' ],
+        '... got the right data sources');
+
 }

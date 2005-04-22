@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 22;
+use Test::More tests => 24;
 
 BEGIN {
     use_ok('DBD::Mock');
@@ -27,7 +27,24 @@ is($drh->{Attribution},
     is($drh, $drh2, '... got the same driver');
 }
 
-is($drh->data_sources(), 'DBI:Mock:', '... got the expected data sources');
+is_deeply(
+    [ $drh->data_sources() ], 
+    [ 'DBI:Mock:' ], 
+    '... got the expected data sources');
+
+$drh->{mock_data_sources} = [ 'test', 'DBI:Mock:mysql' ];
+
+is_deeply(
+    [ $drh->data_sources() ], 
+    [ 'DBI:Mock:test', 'DBI:Mock:mysql' ], 
+    '... got the expected data sources');
+    
+$drh->{mock_add_data_sources} = 'foo';
+
+is_deeply(
+    [ $drh->data_sources() ],  
+    [ 'DBI:Mock:test', 'DBI:Mock:mysql', 'DBI:Mock:foo' ], 
+    '... got the expected data sources');    
 
 { # connect through the driver handle
     my $dbh = $drh->connect();
