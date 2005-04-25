@@ -1703,6 +1703,8 @@ L<Test::MockObject>, which provided the approach
 
 Test::MockObject article - L<http://www.perl.com/pub/a/2002/07/10/tmo.html>
 
+Perl Code Kata: Testing Databases - L<http://www.perl.com/pub/a/2005/02/10/database_kata.html>
+
 =head1 DISCUSSION GROUP
 
 We have created a B<DBD::Mock> google group for discussion/questions about this module.
