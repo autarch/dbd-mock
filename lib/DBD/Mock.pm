@@ -82,6 +82,11 @@ sub _set_mock_attribute_aliases {
     return $AttributeAliases{lc($dbname)}->{$dbh_or_sth}->{$key} = $value;
 }
 
+## Some useful constants
+
+use constant NULL_RESULTSET => [[]];
+
+
 ########################################
 # DRIVER
 
@@ -1697,6 +1702,12 @@ L<DBD::NullP>, which provided a good starting point
 L<Test::MockObject>, which provided the approach
 
 Test::MockObject article - L<http://www.perl.com/pub/a/2002/07/10/tmo.html>
+
+=head1 DISCUSSION GROUP
+
+We have created a B<DBD::Mock> google group for discussion/questions about this module.
+
+L<http://groups-beta.google.com/group/DBDMock>
 
 =head1 ACKNOWLEDGEMENTS
 
