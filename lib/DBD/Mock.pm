@@ -538,7 +538,9 @@ sub fetch {
 
 sub fetchrow_array {
     my ($sth) = @_;
-    return @{$sth->DBD::Mock::st::fetch()};
+    my $row = $sth->DBD::Mock::st::fetch();
+    return unless ref($row) eq 'ARRAY';
+    return @{$row};
 }
 
 sub fetchrow_arrayref {
