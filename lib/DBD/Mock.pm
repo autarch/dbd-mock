@@ -101,7 +101,7 @@ sub connect {
     my ($drh, $dbname, $user, $auth, $attributes) = @_;
     if ($drh->{'mock_connect_fail'} == 1) {
         $drh->DBI::set_err(1, "Could not connect to mock database");
-        return undef;
+        return;
     }
     $attributes ||= {};
     if ($dbname && $DBD::Mock::AttributeAliasing) {
@@ -119,7 +119,7 @@ sub connect {
         mock_can_connect       => 1,
         # rest of attributes
         %{ $attributes },
-    }) || return undef;
+    }) || return;
     return $dbh;
 }
 
@@ -153,7 +153,7 @@ sub STORE {
         elsif ($attr eq 'mock_data_sources') {
             if (ref($value) ne 'ARRAY') {
                 $drh->DBI::set_err(1, "You must pass an array ref of data sources");
-                return undef;
+                return;
             }
             return $drh->{'mock_data_sources'} = $value;
         }
@@ -218,7 +218,7 @@ sub prepare {
         my $parser_error = $@;
         chomp $parser_error;
         $dbh->DBI::set_err(1, "Failed to parse statement. Error: ${parser_error}. Statement: ${statement}");
-        return undef;
+        return;
     }
     
     if (my $session = $dbh->FETCH('mock_session')) {
@@ -229,7 +229,7 @@ sub prepare {
             my $session_error = $@;
             chomp $session_error;
             $dbh->DBI::set_err(1, "Session Error: ${session_error}. Statement: ${statement}");
-            return undef;
+            return;
         }        
     }    
     
@@ -271,7 +271,7 @@ sub prepare {
 
     unless ($dbh->FETCH('Active')) {
         $dbh->DBI::set_err(1, "No connection present");
-        return undef;
+        return;
     }
 
     # This history object will track everything done to the statement
@@ -403,7 +403,7 @@ sub STORE {
             my $error = "Parser must be a code reference or object with 'parse()' " .
                         "method (Given type: '$parser_type')";
             $dbh->DBI::set_err(1, $error);
-            return undef;
+            return;
         }
         push @{$dbh->{mock_parser}}, $value;
         return $value;
@@ -515,7 +515,7 @@ sub execute {
             my $session_error = $@;
             chomp $session_error;
             $dbh->DBI::set_err(1, "Session Error: ${session_error}");
-            return undef;
+            return;
         }        
     }
     
@@ -529,7 +529,7 @@ sub fetch {
     my ($sth) = @_;
     unless ($sth->{Database}->{mock_can_connect}) {
         $sth->{Database}->DBI::set_err(1, "No connection present");
-        return undef;
+        return;
     }
     
     my $tracker = $sth->FETCH( 'mock_my_history' );
@@ -787,7 +787,7 @@ sub mark_executed {
 
 sub next_record {
     my ($self) = @_;
-    return undef if $self->is_depleted;
+    return if $self->is_depleted;
     my $rec_num = $self->current_record_num;
     my $rec = $self->return_data->[$rec_num];
     $self->current_record_num($rec_num + 1);
@@ -1567,7 +1567,7 @@ This object can be used to iterate through the current set of C<DBD::Mock::State
 
 B<next>
 
-Calling C<next> will return the next C<DBD::Mock::StatementTrack> object in the history. If there are no more C<DBD::Mock::StatementTrack> objects available, then this method will return undef. 
+Calling C<next> will return the next C<DBD::Mock::StatementTrack> object in the history. If there are no more C<DBD::Mock::StatementTrack> objects available, then this method will return false. 
 
 B<reset>
 
