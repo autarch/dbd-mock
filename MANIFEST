@@ -27,8 +27,8 @@ t/017_st_can_connect.t
 t/018_mock_statement_track.t
 t/019_mock_statement_track_iterator.t
 t/020_db_pool.t
-t/021_DBD_Mock_Session_test.t
-t/022_DBD_Mock_Session_bound_params_test.t
+t/021_DBD_Mock_Session.t
+t/022_DBD_Mock_Session_bound_params.t
 t/023_statement_failure.t
 t/998_pod.t
 t/999_pod_coverage.t
