@@ -246,9 +246,8 @@ sub prepare {
     my $rs;
     if ( my $all_rs = $dbh->{mock_rs} ) {
         if ( my $by_name = $all_rs->{named}{$statement} ) {
-            # we want to copy this, becauase
-            # it is meant to be reusable
-            $rs = [ @{$by_name} ];
+            # We want to copy this, because it is meant to be reusable
+            $rs = [ @{$by_name->{results}} ];
         }
         else {
             $rs = shift @{$all_rs->{ordered}};
@@ -424,7 +423,15 @@ sub STORE {
                     "as hashref key to 'mock_add_resultset'.\n";
             }
             my @copied_values = @{$value->{results}};
-            $dbh->{mock_rs}{named}{$name} = \@copied_values;
+#            $dbh->{mock_rs}{named}{$name} = \@copied_values;
+            $dbh->{mock_rs}{named}{$name} = {
+                results => \@copied_values,
+            };
+            if ( exists $value->{failure} ) {
+                $dbh->{mock_rs}{named}{$name}{failure} = [
+                    @{$value->{failure}},
+                ];
+            }
             return \@copied_values;
         }
         else {
@@ -1306,6 +1313,8 @@ It should also be noted that the C<rows> method will return the number of record
   };
  
 Now I admit this is not the most elegant way to go about this, but it works for me for now, and until I can come up with a better method, or someone sends me a patch ;) it will do for now.
+
+If you want a given statement to fail, you will have to use the hashref method and add a 'failure' key. That key can be handed an arrayref with the error number and error string, in that order. It can also be handed a hashref with two keys - errornum and errorstring. If the 'failure' key has no useful value associated with it, the errornum will be '1' and the errorstring will be 'Unknown error'.
 
 =item B<mock_get_info>
 

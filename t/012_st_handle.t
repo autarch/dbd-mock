@@ -1,7 +1,4 @@
-#!/usr/bin/perl
-
 use strict;
-use warnings;
 
 use Test::More tests => 15;
 
@@ -43,17 +40,17 @@ BEGIN {
         [ 'FOO', 'BAR', 'BAZ' ],
         '... got the right NAME_uc attributes');    
             
-	is_deeply(
+    is_deeply(
         $sth->{NAME_hash},
         { Foo => 0, Bar => 1, Baz => 2 },
         '... got the right NAME_hash attributes');
         
-	is_deeply(
+    is_deeply(
         $sth->{NAME_hash_lc},
         { foo => 0, bar => 1, baz => 2 },
         '... got the right NAME_hash_lc attributes');
         
-	is_deeply(
+    is_deeply(
         $sth->{NAME_hash_uc},
         { FOO => 0, BAR => 1, BAZ => 2 },
         '... got the right NAME_hash_uc attributes');                    

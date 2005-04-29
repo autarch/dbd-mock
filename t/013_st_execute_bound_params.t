@@ -1,13 +1,10 @@
-#!/usr/bin/perl
-
 use strict;
-use warnings;
 
 use Test::More tests => 18;
 
 BEGIN {
     use_ok('DBD::Mock');  
-	use_ok('DBI');
+    use_ok('DBI');
 }
 
 my $sql = 'SELECT * FROM foo WHERE bar = ? AND baz = ?';

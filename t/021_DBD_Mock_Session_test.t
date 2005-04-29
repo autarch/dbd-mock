@@ -1,7 +1,4 @@
-#!/usr/bin/perl
-
 use strict;
-use warnings;
 
 use Test::More tests => 56;
 
@@ -12,43 +9,43 @@ BEGIN {
 use DBI;
 
 {
-	package Login::Test;
-	
-	my $MAX_LOGIN_FAILURES = 3;
-	
-	sub login {
-		my ($dbh, $u, $p) = @_;
-		# look for the right username and password
-		my ($user_id) = $dbh->selectrow_array("SELECT user_id FROM users WHERE username = '$u' AND password = '$p'");
-		# if we find one, then ...
-		if ($user_id) {
-			# log the event and return true	
-			$dbh->do("INSERT INTO event_log (event) VALUES('User $user_id logged in')");
-			return 'LOGIN SUCCESSFUL';
-		}
-		# if we don't find one then ...
-		else {
-			# see if the username exists ...
-			my ($user_id, $login_failures) = $dbh->selectrow_array("SELECT user_id, login_failures FROM users WHERE username = '$u'");
-			# if we do have a username, and the password doesnt match then ...
-			if ($user_id) {
-				# if we have not reached the max allowable login failures then ...
-				if ($login_failures < $MAX_LOGIN_FAILURES) {
-					# update the login failures
-					$dbh->do("UPDATE users SET login_failures = (login_failures + 1) WHERE user_id = $user_id");
-					return 'BAD PASSWORD';			
-				}
-				# otherwise ...
-				else {
-					# we must update the login failures, and lock the account
-					$dbh->do("UPDATE users SET login_failures = (login_failures + 1), locked = 1 WHERE user_id = $user_id");								return 'USER ACCOUNT LOCKED';
-				}
-			}
-			else {
-				return 'USERNAME NOT FOUND';
-			}
-		}
-	}
+    package Login::Test;
+    
+    my $MAX_LOGIN_FAILURES = 3;
+    
+    sub login {
+        my ($dbh, $u, $p) = @_;
+        # look for the right username and password
+        my ($user_id) = $dbh->selectrow_array("SELECT user_id FROM users WHERE username = '$u' AND password = '$p'");
+        # if we find one, then ...
+        if ($user_id) {
+            # log the event and return true    
+            $dbh->do("INSERT INTO event_log (event) VALUES('User $user_id logged in')");
+            return 'LOGIN SUCCESSFUL';
+        }
+        # if we don't find one then ...
+        else {
+            # see if the username exists ...
+            my ($user_id, $login_failures) = $dbh->selectrow_array("SELECT user_id, login_failures FROM users WHERE username = '$u'");
+            # if we do have a username, and the password doesnt match then ...
+            if ($user_id) {
+                # if we have not reached the max allowable login failures then ...
+                if ($login_failures < $MAX_LOGIN_FAILURES) {
+                    # update the login failures
+                    $dbh->do("UPDATE users SET login_failures = (login_failures + 1) WHERE user_id = $user_id");
+                    return 'BAD PASSWORD';            
+                }
+                # otherwise ...
+                else {
+                    # we must update the login failures, and lock the account
+                    $dbh->do("UPDATE users SET login_failures = (login_failures + 1), locked = 1 WHERE user_id = $user_id");                                return 'USER ACCOUNT LOCKED';
+                }
+            }
+            else {
+                return 'USERNAME NOT FOUND';
+            }
+        }
+    }
 }
 
 {
@@ -59,7 +56,7 @@ use DBI;
     
     is($session->name(), 'Session 1', '... got the first default session name');
 
-	$dbh->{mock_session} = $session;
+    $dbh->{mock_session} = $session;
     
     my $fetched_session = $dbh->{mock_session};
     is($fetched_session, $session, '... it is the same session we put in');
@@ -88,10 +85,10 @@ use DBI;
     
     is($successful_login->name(), 'successful_login', '... got the right name');
 
-	my $dbh = DBI->connect('dbi:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
-	$dbh->{mock_session} = $successful_login;
-	
-	is(Login::Test::login($dbh, 'user', '****'), 'LOGIN SUCCESSFUL', '... logged in successfully');
+    my $dbh = DBI->connect('dbi:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
+    $dbh->{mock_session} = $successful_login;
+    
+    is(Login::Test::login($dbh, 'user', '****'), 'LOGIN SUCCESSFUL', '... logged in successfully');
     
     # check the reusablity
     
@@ -125,10 +122,10 @@ use DBI;
     
     is($bad_username->name(), 'bad_username', '... got the right name');    
 
-	my $dbh = DBI->connect('dbi:Mock:', '', '');
-	$dbh->{mock_session} = $bad_username;
-	
-	is(Login::Test::login($dbh, 'user', '****'), 'USERNAME NOT FOUND', '... username is not found');
+    my $dbh = DBI->connect('dbi:Mock:', '', '');
+    $dbh->{mock_session} = $bad_username;
+    
+    is(Login::Test::login($dbh, 'user', '****'), 'USERNAME NOT FOUND', '... username is not found');
 }
 
 {
@@ -150,10 +147,10 @@ use DBI;
     
     is($bad_password->name(), 'bad_password', '... got the right name');
 
-	my $dbh = DBI->connect('dbi:Mock:', '', '');
-	$dbh->{mock_session} = $bad_password;
-	
-	is(Login::Test::login($dbh, 'user', '****'), 'BAD PASSWORD', '... username is found, but the password is wrong');
+    my $dbh = DBI->connect('dbi:Mock:', '', '');
+    $dbh->{mock_session} = $bad_password;
+    
+    is(Login::Test::login($dbh, 'user', '****'), 'BAD PASSWORD', '... username is found, but the password is wrong');
 }
 
 {
@@ -175,10 +172,10 @@ use DBI;
     
     is($lock_user_account->name(), 'lock_user_account', '... got the right name');
 
-	my $dbh = DBI->connect('dbi:Mock:', '', '');
-	$dbh->{mock_session} = $lock_user_account;
-	
-	is(Login::Test::login($dbh, 'user', '****'), 'USER ACCOUNT LOCKED', '... username is found, and the password is wrong, and the user account is now locked');
+    my $dbh = DBI->connect('dbi:Mock:', '', '');
+    $dbh->{mock_session} = $lock_user_account;
+    
+    is(Login::Test::login($dbh, 'user', '****'), 'USER ACCOUNT LOCKED', '... username is found, and the password is wrong, and the user account is now locked');
 }
 
 # now check some errors
@@ -197,10 +194,10 @@ use DBI;
     ));
     isa_ok($not_enough_statements, 'DBD::Mock::Session');
 
-	my $dbh = DBI->connect('dbi:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
-	$dbh->{mock_session} = $not_enough_statements;
-	
-	eval {
+    my $dbh = DBI->connect('dbi:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
+    $dbh->{mock_session} = $not_enough_statements;
+    
+    eval {
         Login::Test::login($dbh, 'user', '****');
     };
     ok(defined($@), '... got an error, as expected');

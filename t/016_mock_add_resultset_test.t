@@ -1,13 +1,10 @@
-#!/usr/bin/perl
-
 use strict;
-use warnings;
 
 use Test::More tests => 11;
 
 BEGIN {
     use_ok('DBD::Mock');  
-	use_ok('DBI');
+    use_ok('DBI');
 }
 
 # test the ability to overwrite a 

@@ -1,13 +1,10 @@
-#!/usr/bin/perl
-
 use strict;
-use warnings;
 
 use Test::More tests => 43;
 
 BEGIN {
     use_ok('DBD::Mock');  
-	use_ok('DBI');
+    use_ok('DBI');
 }
 
 #use Data::Dumper qw( Dumper );
@@ -63,7 +60,7 @@ $dbh->{mock_add_resultset} = { sql     => $login_sql,
         $sth = $dbh->prepare( q{INSERT INTO foo VALUES ( 'Don Corleone' )} );
         $sth->execute();
     };
- 	ok( ! $sth->{Active},
+     ok( ! $sth->{Active},
         '...this should not be an active handle' );
 }
 

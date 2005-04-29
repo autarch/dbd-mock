@@ -1,7 +1,4 @@
-#!/usr/bin/perl
-
 use strict;
-use warnings;
 
 use Test::More tests => 16;
 
@@ -67,7 +64,7 @@ BEGIN {
     
     is( $history->[0]->statement(), 
         "SELECT foo, bar, baz FROM whatever", 
-        '... this the statement we executed');	       
+        '... this the statement we executed');
     
     ok($dbh->disconnect(), '... not really disconnecting, just returning true');
 }
