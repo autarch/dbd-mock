@@ -19,6 +19,7 @@ BEGIN {
         failure => [ 5, 'Ooops!' ],
     };
 
+    $dbh->{PrintError} = 0;
     $dbh->{RaiseError} = 1;
 
     my $sth = eval { $dbh->prepare('SELECT foo FROM bar') };

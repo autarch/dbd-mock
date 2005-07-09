@@ -2,6 +2,13 @@ Revision history for Perl extension DBD::Mock.
 
 0.27
     - added NULL_RESULTSET constant
+    - now allowing errors to be set with mock_add_resultset
+      see the docs for more information.
+    - added patch from Collin Winter to fix a bug in 
+      the begin_work(), commit() and rollback() methods
+    - added patch from <amcharg@acm.org> for the 
+      fetchall_hashref(), fetchrow_hashref() and
+      selectcol_arrayref() methods and tests
 
 0.26 Fri Apr 08 2005
     - added Rob Kinyon to the AUTHORS list 

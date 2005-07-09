@@ -19,7 +19,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.29';
+our $VERSION = '1.30';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;		# will hold any error codes
@@ -248,6 +248,9 @@ sub prepare {
         if ( my $by_name = $all_rs->{named}{$statement} ) {
             # We want to copy this, because it is meant to be reusable
             $rs = [ @{$by_name->{results}} ];
+            if (exists $by_name->{failure}) {
+                $track_params{failure} = [ @{$by_name->{failure}} ];
+            }
         }
         else {
             $rs = shift @{$all_rs->{ordered}};
@@ -342,6 +345,19 @@ sub prepare {
 
         return $rc;
     }
+}
+
+sub selectcol_arrayref {
+    my ($dbh, $query, $attrib) = @_; 
+    my $a_ref = $dbh->selectall_arrayref($query, $attrib);
+
+    my (@res_list, $res);
+
+    for $res (@{$a_ref}) {
+        push @res_list, ${ $res }[0];
+    }
+
+    return @res_list;
 }
 
 sub FETCH {
@@ -518,6 +534,12 @@ sub execute {
     }
 
     my $tracker = $sth->FETCH( 'mock_my_history' );
+    
+    if ($tracker->has_failure()) {
+        $sth->{Database}->DBI::set_err($tracker->get_failure());
+        return 0;        
+    }
+    
     if ( @params ) {
         $tracker->bound_param_trailing( @params );
     }
@@ -562,6 +584,58 @@ sub fetchrow_array {
 sub fetchrow_arrayref {
     my ($sth) = @_;
     return $sth->DBD::Mock::st::fetch();  
+}
+
+sub fetchrow_hashref {
+    my ($sth) = @_;
+
+    my $tracker = $sth->FETCH( 'mock_my_history' );
+    my $rethash = {};
+    my $rec;
+
+    if ( defined ($rec = $tracker->next_record())) {
+        my $i;
+        my @fields = @{$tracker->fields};
+
+        for ($i=0;$i<(scalar @$rec);$i++) {
+            $rethash->{$fields[$i]} = $$rec[$i];
+        }
+
+        return $rethash;
+    }
+
+    return undef;
+}
+
+sub fetchall_hashref {
+    my ($sth, $keyfield) = @_;
+
+    my $tracker = $sth->FETCH( 'mock_my_history' );
+    my $rethash = {};
+    my @fields = @{$tracker->fields};
+
+    # check if $keyfield is not an integer
+    if ( !($keyfield =~ /^-?\d+$/) ) {
+        my $keyind;
+    
+        # search for index of item that matches $keyfield
+        for (my $i = 0; $i < scalar @fields; $i++) {
+            if ($fields[$i] eq $keyfield) {
+	            $keyind = $i;
+            }
+        }
+    
+        $keyfield = $keyind;
+    }
+
+    my $rec;
+    while ( defined ($rec = $tracker->next_record())) {
+        for (my $i = 0; $i < (scalar @{$rec}); $i++) {
+            $rethash->{$rec->[$keyfield]}->{$fields[$i]} = $rec->[$i];
+        }
+    }
+
+    return $rethash;
 }
 
 sub finish {
@@ -726,7 +800,8 @@ sub new {
     $params{return_data}  ||= [];
     $params{fields}       ||= [];
     $params{bound_params} ||= [];
-    $params{statement}    ||= "";    
+    $params{statement}    ||= "";   
+    $params{failure}      ||= undef;     
     # these params should never be overridden
     # and should always start out in a default
     # state to assure the sanity of this class    
@@ -740,6 +815,16 @@ sub new {
     # this violates encapsulation
     my $self = bless { %params }, $class;
     return $self;
+}
+
+sub has_failure {
+    my ($self) = @_;
+    $self->{failure} ? 1 : 0;
+}
+
+sub get_failure {
+    my ($self) = @_;
+    @{$self->{failure}};    
 }
 
 sub num_fields {
@@ -1740,6 +1825,10 @@ L<http://groups-beta.google.com/group/DBDMock>
 =item Thanks to Thilo Planz for the code for C<bind_param_inout>
 
 =item Thanks to Shlomi Fish for help tracking down RT Bug #11515
+
+=item Thanks to Collin Winter for the patch to fix the C<begin_work()>, C<commit()> and C<rollback()> methods.
+
+=item Thanks to E<lt>amcharg@acm.orgE<gt> for C<fetchall_hashref()>, C<fetchrow_hashref()> and C<selectcol_arrayref()> methods and tests.
 
 =back
 
