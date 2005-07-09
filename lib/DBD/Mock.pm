@@ -297,7 +297,10 @@ sub prepare {
         if ($dbh->FETCH('AutoCommit')) { 
             $dbh->STORE('AutoCommit', 0);
             $begin_work_commit = 1;
-            return $dbh->prepare( 'BEGIN WORK' );        
+            my $sth = $dbh->prepare( 'BEGIN WORK' );
+            my $rc = $sth->execute();
+            $sth->finish();
+            return $rc;       
         }
         else {
             return $dbh->set_err(1, 'AutoCommit is off, you are already within a transaction');
@@ -309,14 +312,17 @@ sub prepare {
         if ($dbh->FETCH('AutoCommit') && $dbh->FETCH('Warn')) {
             return $dbh->set_err(1, "commit ineffective with AutoCommit" );
         }    
+        
         my $sth = $dbh->prepare( 'COMMIT' );
-
+        my $rc = $sth->execute();
+        $sth->finish();
+        
         if ($begin_work_commit) {
             $dbh->STORE('AutoCommit', 1);
             $begin_work_commit = 0;
         }
 
-        return $sth;
+        return $rc;
     }
 
     sub rollback {
@@ -324,14 +330,17 @@ sub prepare {
         if ($dbh->FETCH('AutoCommit') && $dbh->FETCH('Warn')) {
             return $dbh->set_err(1, "rollback ineffective with AutoCommit" );
         }    
+        
         my $sth = $dbh->prepare( 'ROLLBACK' );
-
+        my $rc = $sth->execute();
+        $sth->finish();
+        
         if ($begin_work_commit) {
             $dbh->STORE('AutoCommit', 1);
             $begin_work_commit = 0;
         }
 
-        return $sth;
+        return $rc;
     }
 }
 

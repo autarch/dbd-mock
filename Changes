@@ -1,5 +1,8 @@
 Revision history for Perl extension DBD::Mock.
 
+0.27
+    - added NULL_RESULTSET constant
+
 0.26 Fri Apr 08 2005
     - added Rob Kinyon to the AUTHORS list 
     - added get_info() and set_info() 
