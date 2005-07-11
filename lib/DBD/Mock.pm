@@ -1738,6 +1738,18 @@ All functionality listed here is highly experimental and should be used with gre
 
 =over 4
 
+=item Error handling in I<mock_add_resultset>
+
+We have added experimental erro handling in I<mock_add_resultset> the best example is the test file F<t/023_statement_failure.t>, but it looks something like this:
+
+  $dbh->{mock_add_resultset} = {
+      sql => 'SELECT foo FROM bar',
+      results => DBD::Mock->NULL_RESULTSET,
+      failure => [ 5, 'Ooops!' ],
+  };
+
+The C<5> is the DBI error number, and C<'Ooops!'> is the error string passed to DBI. This basically allows you to force an error condition to occur when a given SQL statement is execute. We are currently working on allowing more control on the 'when' and 'where' the error happens, look for it in future releases.
+
 =item Attribute Aliasing
 
 Basically this feature allows you to alias attributes to other attributes. So for instance, you can alias a commonly expected attribute like 'mysql_insertid' to something DBD::Mock already has like 'mock_last_insert_id'. While you can also just set 'mysql_insertid' yourself, this functionality allows it to take advantage of things like the autoincrementing of the 'mock_last_insert_id' attribute. 
@@ -1828,7 +1840,7 @@ L<http://groups-beta.google.com/group/DBDMock>
 
 =item Thanks to Collin Winter for the patch to fix the C<begin_work()>, C<commit()> and C<rollback()> methods.
 
-=item Thanks to E<lt>amcharg@acm.orgE<gt> for C<fetchall_hashref()>, C<fetchrow_hashref()> and C<selectcol_arrayref()> methods and tests.
+=item Thanks to Andrew McHarg E<lt>amcharg@acm.orgE<gt> for C<fetchall_hashref()>, C<fetchrow_hashref()> and C<selectcol_arrayref()> methods and tests.
 
 =back
 
