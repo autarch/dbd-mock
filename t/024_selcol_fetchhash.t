@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 7;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -55,28 +55,30 @@ my $dbh = DBI->connect( 'DBI:Mock:', '', '' );
 }
 
 {
-  my @res = [];
+  my $res;
 
   my @expected = ('1','27');
 
   eval {
-    @res = $dbh->selectcol_arrayref($swallow_sql);
+    $res = $dbh->selectcol_arrayref($swallow_sql);
   };
     
   
-  is_deeply(\@res, \@expected, "Checking if selectcol_arrayref works.");
+  isa_ok(\$res, "REF");
+  isa_ok($res, "ARRAY");
+  is_deeply($res, \@expected, "Checking if selectcol_arrayref works.");
 }
 
 is_deeply(
 	  $dbh->selectall_hashref($items_sql, 'id', "Checking selectall_hashref with named key."), 
 	  { '2' => $coco_hash,
-	    '42' =>$not_coco_hash,
+	    '42' => $not_coco_hash,
 	  },
 	  '... selectall_hashref worked correctly');
 
 is_deeply(
 	  $dbh->selectall_hashref($items_sql, 1, "Checking selectall_hashref with named key."), 
 	  { 'coconuts' => $coco_hash,
-	    'not coconuts' =>$not_coco_hash,
+	    'not coconuts' => $not_coco_hash,
 	  },
 	  '... selectall_hashref worked correctly');

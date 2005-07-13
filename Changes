@@ -1,5 +1,12 @@
 Revision history for Perl extension DBD::Mock.
 
+0.28 Wen July 13, 2005
+    - update to patch from Andrew McHarg <amcharg@acm.org>
+      to fix behavior in selectcol_arrayref() methods and tests
+    - fix version in META.yml
+    - some refactoring of fetchall_hashref(), fetchrow_hashref()
+      to incorporate DBD-Mock error handling.
+
 0.27 Mon July 11, 2005
     - added NULL_RESULTSET constant
     - now allowing errors to be set with mock_add_resultset.

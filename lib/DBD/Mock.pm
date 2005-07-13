@@ -19,7 +19,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;		# will hold any error codes
@@ -347,17 +347,28 @@ sub prepare {
     }
 }
 
+# NOTE:
+# this method should work in most cases, however it does
+# not exactly follow the DBI spec in the case of error 
+# handling. I am not sure if that level of detail is 
+# really nessecary since it is a weird error conditon 
+# which causes it to fail anyway. However if you find you do need it, 
+# then please email me about it. I think it would be possible
+# to mimic it by accessing the DBD::Mock::StatementTrack
+# object directly.
 sub selectcol_arrayref {
-    my ($dbh, $query, $attrib) = @_; 
-    my $a_ref = $dbh->selectall_arrayref($query, $attrib);
-
-    my (@res_list, $res);
-
-    for $res (@{$a_ref}) {
-        push @res_list, ${ $res }[0];
-    }
-
-    return @res_list;
+    my ($dbh, $query, $attrib, @bindvalues) = @_; 
+    # get all the columns ...
+    my $a_ref = $dbh->selectall_arrayref($query, $attrib, @bindvalues);
+    
+    # if we get nothing back, or dont get an
+    # ARRAY ref back, then we can assume 
+    # something went wrong, and so return undef.
+    return undef unless defined $a_ref || ref($a_ref) ne 'ARRAY';
+    
+    # if we do get something then we 
+    # grab all the columns out of it.
+    return [ map { $_->[0] } @{$a_ref} ]
 }
 
 sub FETCH {
@@ -587,21 +598,29 @@ sub fetchrow_arrayref {
 }
 
 sub fetchrow_hashref {
-    my ($sth) = @_;
+    my ($sth, $name) = @_;
+    # handle any errors since we are grabbing
+    # from the tracker directly
+    unless ($sth->{Database}->{mock_can_connect}) {
+        $sth->{Database}->DBI::set_err(1, "No connection present");
+        return;
+    }    
+    
+    # first handle the $name, it will default to NAME
+    $name ||= 'NAME';
+    # then fetch the names from the $sth (per DBI spec)
+    my $fields = $sth->FETCH($name);
 
-    my $tracker = $sth->FETCH( 'mock_my_history' );
-    my $rethash = {};
-    my $rec;
-
-    if ( defined ($rec = $tracker->next_record())) {
-        my $i;
-        my @fields = @{$tracker->fields};
-
-        for ($i=0;$i<(scalar @$rec);$i++) {
-            $rethash->{$fields[$i]} = $$rec[$i];
-        }
-
-        return $rethash;
+    # now check the tracker ...
+    my $tracker = $sth->FETCH( 'mock_my_history' );    
+    # and collect the results
+    if (my $record = $tracker->next_record()) {
+        my @values = @{$record};
+        return {
+            map {  
+                $_ => shift(@values)
+            } @{$fields}
+        };
     }
 
     return undef;
@@ -609,30 +628,50 @@ sub fetchrow_hashref {
 
 sub fetchall_hashref {
     my ($sth, $keyfield) = @_;
+    # handle any errors since we are grabbing
+    # from the tracker directly
+    unless ($sth->{Database}->{mock_can_connect}) {
+        $sth->{Database}->DBI::set_err(1, "No connection present");
+        return;
+    }      
 
     my $tracker = $sth->FETCH( 'mock_my_history' );
     my $rethash = {};
-    my @fields = @{$tracker->fields};
+    
+    # get the name set by 
+    my $name = $sth->{Database}->FETCH('FetchHashKeyName') || 'NAME';
+    my $fields = $sth->FETCH($name);
 
     # check if $keyfield is not an integer
-    if ( !($keyfield =~ /^-?\d+$/) ) {
-        my $keyind;
-    
+    if (!($keyfield =~ /^-?\d+$/)) {
+        my $found = 0;
         # search for index of item that matches $keyfield
-        for (my $i = 0; $i < scalar @fields; $i++) {
-            if ($fields[$i] eq $keyfield) {
-	            $keyind = $i;
-            }
+        foreach my $index (0 .. scalar(@{$fields})) {
+	        if ($fields->[$index] eq $keyfield) {
+	            $found++;
+	            # now make the keyfield the index
+	            $keyfield = $index;
+	            # and jump out of the loop :)
+	            last;
+	        }
         }
-    
-        $keyfield = $keyind;
+        unless ($found) {
+            $sth->{Database}->DBI::set_err(1, "Could not find key field '$keyfield'");
+            return;
+        }
     }
 
-    my $rec;
-    while ( defined ($rec = $tracker->next_record())) {
-        for (my $i = 0; $i < (scalar @{$rec}); $i++) {
-            $rethash->{$rec->[$keyfield]}->{$fields[$i]} = $rec->[$i];
-        }
+    # now loop through all the records ...
+    while (my $record = $tracker->next_record()) {
+        # copy the values so as to preserve
+        # the original record...
+        my @values = @{$record};
+        # populate the hash 
+        $rethash->{$record->[$keyfield]} = {
+            map {  
+                $_ => shift(@values)
+            } @{$fields}
+        };
     }
 
     return $rethash;
