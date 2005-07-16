@@ -19,7 +19,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.31';
+our $VERSION = '1.32';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;		# will hold any error codes
@@ -234,8 +234,14 @@ sub prepare {
     }    
     
     my $sth = DBI::_new_sth($dbh, { Statement => $statement });
-    
-    $dbh->{mock_last_insert_id}++ if ($statement =~ /^\s*?INSERT/);
+
+    # XXX - this will not interfere 
+    # with the mock_last_insert_ids
+    # attribute, but if that one is
+    # used it will overwrite this one
+    if ($statement =~ /^\s*?INSERT/) {
+        $dbh->{mock_last_insert_id}++;        
+    }
     
     $sth->trace_msg("Preparing statement '${statement}'\n", 1);
     
@@ -476,9 +482,16 @@ sub STORE {
         }
     }
     elsif ($attrib eq 'mock_start_insert_id') {
-        # we start at one minus the start id
-        # so that the increment works
-        $dbh->{mock_last_insert_id} = $value - 1;
+        if ( ref $value eq 'ARRAY' ) {
+            $dbh->{mock_last_insert_ids} = {} unless $dbh->{mock_last_insert_ids};
+            $dbh->{mock_last_insert_ids}{$value->[0]} = $value->[1];
+        }
+        else {
+            # we start at one minus the start id
+            # so that the increment works            
+            $dbh->{mock_last_insert_id} = $value - 1;
+        }        
+        
     }
     elsif ($attrib eq 'mock_session') {
         (ref($value) && UNIVERSAL::isa($value, 'DBD::Mock::Session'))
@@ -538,16 +551,17 @@ sub bind_param_inout {
 
 sub execute {
     my ($sth, @params) = @_;
+    my $dbh = $sth->{Database};
 
-    unless ($sth->{Database}->{mock_can_connect}) {
-        $sth->{Database}->DBI::set_err(1, "No connection present");
+    unless ($dbh->{mock_can_connect}) {
+        $dbh->DBI::set_err(1, "No connection present");
         return 0;
     }
 
     my $tracker = $sth->FETCH( 'mock_my_history' );
     
     if ($tracker->has_failure()) {
-        $sth->{Database}->DBI::set_err($tracker->get_failure());
+        $dbh->DBI::set_err($tracker->get_failure());
         return 0;        
     }
     
@@ -555,8 +569,7 @@ sub execute {
         $tracker->bound_param_trailing( @params );
     }
     
-    if (my $session = $sth->{Database}->{mock_session}) {
-        my $dbh = $sth->{Database};
+    if (my $session = $dbh->{mock_session}) {
         eval {
             $session->verify_bound_params($dbh, $tracker->bound_params());
         };
@@ -567,6 +580,13 @@ sub execute {
             return;
         }        
     }
+    
+    # handle INSERT statements and the mock_last_insert_ids
+    if ($dbh->{Statement} =~ /insert\s+into\s+(\S+)/i &&
+        $dbh->{mock_last_insert_ids}                  &&
+        $dbh->{mock_last_insert_ids}{$1}) {
+        $dbh->{mock_last_insert_id} = $dbh->{mock_last_insert_ids}{$1}++;
+    }         
     
     $tracker->mark_executed;
     my $fields = $tracker->fields;
@@ -1459,7 +1479,21 @@ This attribute can be used to set a current DBD::Mock::Session object. For more 
 
 =item B<mock_last_insert_id>
 
-This attribute is incremented each time an INSERT statement is passed to prepare on a per-handle basis. It's starting value can be set with  the 'mock_start_insert_id' attribute (see below).
+This attribute is incremented each time an INSERT statement is passed to C<prepare> on a per-handle basis. It's starting value can be set with  the 'mock_start_insert_id' attribute (see below).
+
+This attribute also can be used with an ARRAY ref parameter, it's behavior is slightly different in that instead of incrementing the value for every C<prepare> it will only increment for each C<execute>. This allows it to be used over multiple C<execute> calls in a single C<$sth>. It's usage looks like this:
+
+  $dbh->{mock_last_insert_id} = [ 'Foo', 10 ];
+  
+  my $sth = $dbh->prepare('INSERT INTO Foo (foo, bar) VALUES(?, ?)');
+  
+  $sth->execute(1, 2);
+  # $dbh->{mock_last_insert_id} == 10
+  
+  $sth->execute(3, 4);
+  # $dbh->{mock_last_insert_id} == 11
+
+For more examples, please refer to the test file F<t/025_mock_last_insert_id.t>.
 
 =item B<mock_start_insert_id>
 
@@ -1880,6 +1914,8 @@ L<http://groups-beta.google.com/group/DBDMock>
 =item Thanks to Collin Winter for the patch to fix the C<begin_work()>, C<commit()> and C<rollback()> methods.
 
 =item Thanks to Andrew McHarg E<lt>amcharg@acm.orgE<gt> for C<fetchall_hashref()>, C<fetchrow_hashref()> and C<selectcol_arrayref()> methods and tests.
+
+=item Thanks to Andrew W. Gibbs for the C<mock_last_insert_ids> patch and test
 
 =back
 

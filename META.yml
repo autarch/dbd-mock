@@ -1,6 +1,6 @@
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         DBD-Mock
-version:      0.28
+version:      0.29
 version_from: VERSION
 installdirs:  site
 requires:

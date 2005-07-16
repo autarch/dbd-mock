@@ -30,5 +30,7 @@ t/020_db_pool.t
 t/021_DBD_Mock_Session.t
 t/022_DBD_Mock_Session_bound_params.t
 t/023_statement_failure.t
+t/024_selcol_fetchhash.t
+t/025_mock_last_insert_id.t
 t/998_pod.t
 t/999_pod_coverage.t
