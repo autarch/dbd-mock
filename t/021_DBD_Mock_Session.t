@@ -321,7 +321,7 @@ use DBI;
         $session->verify_statement(DBI->connect('dbi:Mock:', '', ''), 'SELECT foo FROM bar');
     };
     ok(defined($@), '... got an error, as expected');
-    like($@, qr/^Statement does not match current state in DBD::Mock::Session \(session\)/, '... got the error we expected');
+    like($@, qr/^Statement does not match current state \(with Regexp\) in DBD::Mock::Session \(session\)/, '... got the error we expected');
 
 }
 
@@ -338,6 +338,6 @@ use DBI;
         $session->verify_statement(DBI->connect('dbi:Mock:', '', ''), 'SELECT foo FROM bar');
     };
     ok(defined($@), '... got an error, as expected');
-    like($@, qr/^Statement does not match current state in DBD::Mock::Session \(session\)/, '... got the error we expected');
+    like($@, qr/^Statement does not match current state \(with CODE ref\) in DBD::Mock::Session \(session\)/, '... got the error we expected');
 
 }
