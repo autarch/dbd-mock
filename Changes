@@ -5,6 +5,12 @@ Revision history for Perl extension DBD::Mock.
       of 'mock_last_insert_id' attribute
         - added test file as well
         - added docs on it too
+    
+    >> DBD::Mock::Session
+        - now allows regexp's in the bound_params list
+          so that you can check your params are 'like' 
+          something, and not exactly something
+        - Improved error messages
 
 0.28 Wen July 13, 2005
     - update to patch from Andrew McHarg <amcharg@acm.org>

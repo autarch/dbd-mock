@@ -1084,15 +1084,19 @@ sub verify_statement {
 #    print STDERR "Testing statement:\n\tgot:      $statement\n\texpected: $SQL\n";    
     unless (ref($SQL)) {
         ($SQL eq $statement) 
-            || die "Statement does not match current state in DBD::Mock::Session (" . $self->{name} . ")";
+            || die "Statement does not match current state in DBD::Mock::Session (" . $self->{name} . ")\n" .
+                   "      got: $statement\n" .
+                   " expected: $SQL";
     }
     elsif (ref($SQL) eq 'Regexp') {
         ($statement =~ /$SQL/) 
-            || die "Statement does not match current state in DBD::Mock::Session (" . $self->{name} . ")";
+            || die "Statement does not match current state (with Regexp) in DBD::Mock::Session (" . $self->{name} . ")\n" .
+                   "      got: $statement\n" .
+                   " expected: $SQL";
     }
     elsif (ref($SQL) eq 'CODE') {
         ($SQL->($statement, $current_state)) 
-            || die "Statement does not match current state in DBD::Mock::Session (" . $self->{name} . ")";
+            || die "Statement does not match current state (with CODE ref) in DBD::Mock::Session (" . $self->{name} . ")";
     }
     else {
         die "Bad 'statement' value '$SQL' in current state in DBD::Mock::Session (" . $self->{name} . ")";
@@ -1110,11 +1114,23 @@ sub verify_bound_params {
     if (exists ${$current_state}{bound_params}) {
         my $expected = $current_state->{bound_params};
         (scalar(@{$expected}) == scalar(@{$params}))
-            || die "Not the same number of bound params in current state in DBD::Mock::Session (" . $self->{name} . ")";
+            || die "Not the same number of bound params in current state in DBD::Mock::Session (" . $self->{name} . ")\n" .
+                   "      got: " . scalar(@{$params}) . "\n" .
+                   " expected: " . scalar(@{$expected});
         for (my $i = 0; $i < scalar(@{$params}); $i++) {
-            no warnings;
-            ($params->[$i] eq $expected->[$i])
-                || die "Bound params do not match in current state in DBD::Mock::Session (" . $self->{name} . ")"; 
+            no warnings;    
+            if (ref($expected->[$i]) eq 'Regexp') {
+                ($params->[$i] =~ /$expected->[$i]/)
+                    || die "Bound params do not match (using regexp) in current state in DBD::Mock::Session (" . $self->{name} . ")\n" .
+                           "      got: " . $params->[$i] . "\n" .
+                           " expected: " . $expected->[$i];                 
+            }
+            else {
+                ($params->[$i] eq $expected->[$i])
+                    || die "Bound params do not match in current state in DBD::Mock::Session (" . $self->{name} . ")\n" . 
+                           "      got: " . $params->[$i] . "\n" .
+                           " expected: " . $expected->[$i];    
+            }
         }
     }
     # and make sure we go to 
@@ -1773,8 +1789,10 @@ The DBD::Mock::Session object is an alternate means of specifying the SQL statem
         },
         { 
             # with bound parameters
-            statement    => "SELECT foo FROM bar WHERE baz = ?",
-            bound_params => [ 10 ],
+            statement    => "SELECT foo FROM bar WHERE baz = ? AND borg = ?",
+            # check exact bound param value, 
+            # then check it against regexp
+            bound_params => [ 10, qr/\d+/ ],
             results      => [[ 'foo' ], [ 'baz' ]]
         }        
   ));
