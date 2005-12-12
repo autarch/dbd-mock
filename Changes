@@ -1,5 +1,9 @@
 Revision history for Perl extension DBD::Mock.
 
+1.33
+    - Fixed RT #15599
+    - Fixed RT #15602
+
 0.29
     - added patch from Andrew W. Gibbs to allow the ARRAY version
       of 'mock_last_insert_id' attribute

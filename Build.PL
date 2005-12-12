@@ -10,7 +10,7 @@ my $build = Module::Build->new(
     license => 'perl',
     requires => {
         'perl' => '5.6.0',
-        'DBI' => '1.30',
+        'DBI' => 1.30,
     },
     optional => {
     },

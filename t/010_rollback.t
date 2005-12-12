@@ -83,3 +83,4 @@ ok( @{$history->[2]->bound_params} == 0, 'No parameters' );
 
 is( $history->[3]->statement, 'COMMIT' );
 ok( @{$history->[3]->bound_params} == 0, 'No parameters' );
+

@@ -19,7 +19,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes
@@ -565,7 +565,7 @@ sub execute {
     }
     
     if ( @params ) {
-        $tracker->bound_param_trailing( @params );
+        $tracker->bind_params( @params );
     }
     
     if (my $session = $dbh->{mock_session}) {
@@ -909,6 +909,11 @@ sub bound_param {
 sub bound_param_trailing {
     my ($self, @values) = @_;
     push @{$self->{bound_params}}, @values;
+}
+
+sub bind_params {
+    my ($self, @values) = @_;
+    @{$self->{bound_params}} = @values;
 }
 
 # Rely on the DBI's notion of Active: a statement is active if it's
