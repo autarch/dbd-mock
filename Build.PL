@@ -1,11 +1,15 @@
 use Module::Build;
 
+use 5.6.0;
+
 use strict;
+use warnings;
 
 my $build = Module::Build->new(
     module_name => 'DBD::Mock',
     license => 'perl',
     requires => {
+        'perl' => '5.6.0',
         'DBI' => '1.30',
     },
     optional => {
