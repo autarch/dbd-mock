@@ -2,6 +2,9 @@
 \bCVS\b
 ,v$
 \B\.svn\b
+^_build
+^Build$
+^blibdirs$
 
 # Makemaker generated files and dirs.
 ^MANIFEST\.
@@ -16,7 +19,8 @@
 \.old$
 ^#.*#$
 ^\.#
-.swp$
+\..*\.sw.?$
+\.bak$
 
 # Devel::Cover
 ^cover_db/?
