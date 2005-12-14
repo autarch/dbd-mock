@@ -1,11 +1,14 @@
+.DS_Store
+Build.PL
 Changes
+lib/.DS_Store
+lib/DBD/.DS_Store
+lib/DBD/Mock.pm
 Makefile.PL
 MANIFEST
-MANIFEST.SKIP
 META.yml
 README
-VERSION
-lib/DBD/Mock.pm
+t/.DS_Store
 t/000_basic.t
 t/001_db_handle.t
 t/002_dr_handle.t
@@ -34,3 +37,4 @@ t/024_selcol_fetchhash.t
 t/025_mock_last_insert_id.t
 t/998_pod.t
 t/999_pod_coverage.t
+t/bug_0001.t

@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 14;
+use Test::More tests => 15;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -21,8 +21,9 @@ my $sql = 'SELECT * FROM foo WHERE bar = ? AND baz = ?';
         'Statement handle stores SQL (attribute)' );
     is( $sth->{mock_is_executed}, 'no',
         'Execute flag not set yet' );
-    eval { $sth->execute() };
+    my $rows = eval { $sth->execute() };
     ok( ! $@, 'Called execute() ok (no params)' );
+    is($rows, '0E0', '... we got back 0E0 for num of rows');
     is( $sth->{mock_is_executed}, 'yes',
         'Execute flag set after execute()' );
     my $t_params = $sth->{mock_my_history}->bound_params;

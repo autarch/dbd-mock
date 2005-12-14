@@ -19,7 +19,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.33';
+our $VERSION = '1.32';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes
@@ -34,7 +34,7 @@ sub driver {
         Version     => $DBD::Mock::VERSION,
         Attribution => 'DBD Mock driver by Chris Winters & Stevan Little (orig. from Tim Bunce)',
         Err         => \$DBD::Mock::err,
-         Errstr      => \$DBD::Mock::errstr,
+        Errstr      => \$DBD::Mock::errstr,
         # mock attributes
         mock_connect_fail => 0,
         # and pass in any extra attributes given
@@ -464,7 +464,6 @@ sub STORE {
                     "as hashref key to 'mock_add_resultset'.\n";
             }
             my @copied_values = @{$value->{results}};
-#            $dbh->{mock_rs}{named}{$name} = \@copied_values;
             $dbh->{mock_rs}{named}{$name} = {
                 results => \@copied_values,
             };
@@ -581,7 +580,7 @@ sub execute {
     }
     
     # handle INSERT statements and the mock_last_insert_ids
-    if ($dbh->{Statement} =~ /insert\s+into\s+(\S+)/i &&
+    if ($dbh->{Statement} =~ /^\s*?insert\s+into\s+(\S+)/i &&
         $dbh->{mock_last_insert_ids}                  &&
         $dbh->{mock_last_insert_ids}{$1}) {
         $dbh->{mock_last_insert_id} = $dbh->{mock_last_insert_ids}{$1}++;
@@ -590,7 +589,12 @@ sub execute {
     $tracker->mark_executed;
     my $fields = $tracker->fields;
     $sth->STORE( NUM_OF_PARAMS => $tracker->num_params );
-    return '0E0';
+    
+    # always return 0E0 for Selects
+    if ($dbh->{Statement} =~ /^\s*?select/i) {
+        return '0E0';
+    }
+    return ($sth->rows() || '0E0');
 }
 
 sub fetch {
@@ -1894,11 +1898,11 @@ I would also like to add the ability to bind a subroutine (or possibly an object
 I use L<Devel::Cover> to test the code coverage of my tests, below is the L<Devel::Cover> report on this module test suite.
 
  ---------------------------- ------ ------ ------ ------ ------ ------ ------
- File                           stmt branch   cond    sub    pod   time  total
+ File                           stmt   bran   cond    sub    pod   time  total
  ---------------------------- ------ ------ ------ ------ ------ ------ ------
- DBD/Mock.pm                    93.2   88.4   77.2   94.8    0.0  100.0   90.7
+ DBD/Mock.pm                    90.9   85.5   76.0   94.1    0.0  100.0   88.4
  ---------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                          93.2   88.4   77.2   94.8    0.0  100.0   90.7
+ Total                          90.9   85.5   76.0   94.1    0.0  100.0   88.4
  ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO
