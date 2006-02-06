@@ -24,3 +24,6 @@
 
 # Devel::Cover
 ^cover_db/?
+
+# Mac OS X resource forks
+\.DS_Store

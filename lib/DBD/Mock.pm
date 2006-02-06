@@ -7,7 +7,7 @@ sub import {
 }
 
 # --------------------------------------------------------------------------- #
-#   Copyright (c) 2004 Stevan Little, Chris Winters 
+#   Copyright (c) 2004-2006 Stevan Little, Chris Winters 
 #   (spawned from original code Copyright (c) 1994 Tim Bunce)
 # --------------------------------------------------------------------------- #
 #   You may distribute under the terms of either the GNU General Public
@@ -19,7 +19,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes
@@ -117,6 +117,10 @@ sub connect {
         mock_statement_history => [],
         # ability to fake a failed DB connection
         mock_can_connect       => 1,
+        # ability to make other things fail :)
+        mock_can_prepare       => 1,
+        mock_can_execute       => 1,
+        mock_can_fetch         => 1,        
         # rest of attributes
         %{ $attributes },
     }) || return;
@@ -203,6 +207,17 @@ sub get_info {
 
 sub prepare {
     my($dbh, $statement) = @_;
+    
+    unless ($dbh->{mock_can_connect}) {
+        $dbh->DBI::set_err(1, "No connection present");
+        return;
+    }
+    unless ($dbh->{mock_can_prepare}) {
+        $dbh->DBI::set_err(1, "Cannot prepare");
+        return;
+    }
+    $dbh->{mock_can_prepare}++ if $dbh->{mock_can_prepare} < 0;
+    
 
     eval {
         foreach my $parser ( @{ $dbh->{mock_parser} } ) {
@@ -555,6 +570,11 @@ sub execute {
         $dbh->DBI::set_err(1, "No connection present");
         return 0;
     }
+    unless ($dbh->{mock_can_execute}) {
+        $dbh->DBI::set_err(1, "Cannot execute");
+        return 0;
+    }
+    $dbh->{mock_can_execute}++ if $dbh->{mock_can_execute} < 0;    
 
     my $tracker = $sth->FETCH( 'mock_my_history' );
     
@@ -599,10 +619,16 @@ sub execute {
 
 sub fetch {
     my ($sth) = @_;
-    unless ($sth->{Database}->{mock_can_connect}) {
-        $sth->{Database}->DBI::set_err(1, "No connection present");
+    my $dbh = $sth->{Database};
+    unless ($dbh->{mock_can_connect}) {
+        $dbh->DBI::set_err(1, "No connection present");
         return;
     }
+    unless ($dbh->{mock_can_fetch}) {
+        $dbh->DBI::set_err(1, "Cannot fetch");
+        return;
+    }
+    $dbh->{mock_can_fetch}++ if $dbh->{mock_can_fetch} < 0;
     
     my $tracker = $sth->FETCH( 'mock_my_history' );
     return $tracker->next_record;
@@ -622,12 +648,18 @@ sub fetchrow_arrayref {
 
 sub fetchrow_hashref {
     my ($sth, $name) = @_;
+    my $dbh = $sth->{Database};
     # handle any errors since we are grabbing
     # from the tracker directly
-    unless ($sth->{Database}->{mock_can_connect}) {
-        $sth->{Database}->DBI::set_err(1, "No connection present");
+    unless ($dbh->{mock_can_connect}) {
+        $dbh->DBI::set_err(1, "No connection present");
         return;
     }    
+    unless ($dbh->{mock_can_fetch}) {
+        $dbh->DBI::set_err(1, "Cannot fetch");
+        return;
+    }
+    $dbh->{mock_can_fetch}++ if $dbh->{mock_can_fetch} < 0;    
     
     # first handle the $name, it will default to NAME
     $name ||= 'NAME';
@@ -651,12 +683,18 @@ sub fetchrow_hashref {
 
 sub fetchall_hashref {
     my ($sth, $keyfield) = @_;
+    my $dbh = $sth->{Database};
     # handle any errors since we are grabbing
     # from the tracker directly
-    unless ($sth->{Database}->{mock_can_connect}) {
-        $sth->{Database}->DBI::set_err(1, "No connection present");
+    unless ($dbh->{mock_can_connect}) {
+        $dbh->DBI::set_err(1, "No connection present");
         return;
     }      
+    unless ($dbh->{mock_can_fetch}) {
+        $dbh->DBI::set_err(1, "Cannot fetch");
+        return;
+    }
+    $dbh->{mock_can_fetch}++ if $dbh->{mock_can_fetch} < 0;      
 
     my $tracker = $sth->FETCH( 'mock_my_history' );
     my $rethash = {};
@@ -679,7 +717,7 @@ sub fetchall_hashref {
             }
         }
         unless ($found) {
-            $sth->{Database}->DBI::set_err(1, "Could not find key field '$keyfield'");
+            $dbh->DBI::set_err(1, "Could not find key field '$keyfield'");
             return;
         }
     }
@@ -1939,11 +1977,15 @@ L<http://groups-beta.google.com/group/DBDMock>
 
 =item Thanks to Andrew W. Gibbs for the C<mock_last_insert_ids> patch and test
 
+=item Thanks to Chas Owens for patch and test for the C<mock_can_prepare>, C<mock_can_execute>, and C<mock_can_fetch> features.
+
 =back
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004 & 2005 Stevan Little, Chris Winters. All rights reserved.
+Copyright (C) 2004 Chris Winters <chris@cwinters.com>
+
+Copyright (C) 2004-2006 Stevan Little <stevan@iinteractive.com>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

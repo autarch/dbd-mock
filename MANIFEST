@@ -1,14 +1,10 @@
-.DS_Store
 Build.PL
 Changes
-lib/.DS_Store
-lib/DBD/.DS_Store
 lib/DBD/Mock.pm
 Makefile.PL
 MANIFEST
 META.yml
 README
-t/.DS_Store
 t/000_basic.t
 t/001_db_handle.t
 t/002_dr_handle.t

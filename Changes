@@ -1,5 +1,10 @@
 Revision history for Perl extension DBD::Mock.
 
+1.33 
+    - Thanks to Chas Owens for patch and test 
+      for the mock_can_prepare, mock_can_execute, 
+      and mock_can_fetch features.
+
 1.32 Wed Dec 14, 2005
     - Fixed RT Bug #15599
     - Fixed RT Bug #15602
