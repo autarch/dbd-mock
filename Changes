@@ -1,5 +1,8 @@
 Revision history for Perl extension DBD::Mock.
 
+1.34 
+    - Fixed how AutoCommit is handled to avoid $dbh caching (RobK)
+
 1.33 
     - Thanks to Chas Owens for patch and test 
       for the mock_can_prepare, mock_can_execute, 

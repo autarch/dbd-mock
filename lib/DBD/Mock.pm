@@ -1,4 +1,3 @@
-
 package DBD::Mock;
 
 sub import {
@@ -19,7 +18,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes
@@ -109,6 +108,10 @@ sub connect {
         $attributes->{mock_attribute_aliases} = DBD::Mock::_get_mock_attribute_aliases($dbname);
         $attributes->{mock_database_name} = $dbname;
     }
+
+    # Need to protect AutoCommit from $dbh caching - RobK.
+    my $autocommit = delete $attributes->{ 'AutoCommit' };
+
     my $dbh = DBI::_new_dbh($drh, {
         Name                   => $dbname,       
         # holds statement parsing coderefs/objects
@@ -124,6 +127,9 @@ sub connect {
         # rest of attributes
         %{ $attributes },
     }) || return;
+
+    $dbh->STORE( 'AutoCommit' => $autocommit || 1 );
+
     return $dbh;
 }
 
@@ -392,11 +398,14 @@ sub selectcol_arrayref {
     return [ map { $_->[0] } @{$a_ref} ]
 }
 
+{
+    my %autocommit;
 sub FETCH {
     my ( $dbh, $attrib ) = @_;
     $dbh->trace_msg( "Fetching DB attrib '$attrib'\n" );
     if ($attrib eq 'AutoCommit') {
-        return $dbh->{AutoCommit};
+        $dbh->trace_msg( "Fetching AutoCommit\n" );
+        return $autocommit{$dbh};
     }
      elsif ($attrib eq 'Active') {
         return $dbh->{mock_can_connect};
@@ -435,7 +444,7 @@ sub STORE {
     my ( $dbh, $attrib, $value ) = @_;   
     $dbh->trace_msg( "Storing DB attribute '$attrib' with '" . (defined($value) ? $value : 'undef') . "'\n" );
     if ($attrib eq 'AutoCommit') {
-        $dbh->{AutoCommit} = $value;
+        $autocommit{$dbh} = $value;
         return $value;
     }
     elsif ( $attrib eq 'mock_clear_history' ) {
@@ -526,6 +535,7 @@ sub STORE {
       $dbh->trace_msg("... storing non-driver attribute ($attrib) with value ($value) that DBI wont handle\n");    
       return $dbh->{$attrib} = $value;
   }
+}
 }
 
 sub DESTROY {
@@ -1933,15 +1943,14 @@ I would also like to add the ability to bind a subroutine (or possibly an object
 
 =head1 CODE COVERAGE
 
-I use L<Devel::Cover> to test the code coverage of my tests, below is the L<Devel::Cover> report on this module test suite.
+We use L<Devel::Cover> to test the code coverage of my tests, below is the L<Devel::Cover> report on this module test suite.
 
- ---------------------------- ------ ------ ------ ------ ------ ------ ------
- File                           stmt   bran   cond    sub    pod   time  total
- ---------------------------- ------ ------ ------ ------ ------ ------ ------
- DBD/Mock.pm                    90.9   85.5   76.0   94.1    0.0  100.0   88.4
- ---------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                          90.9   85.5   76.0   94.1    0.0  100.0   88.4
- ---------------------------- ------ ------ ------ ------ ------ ------ ------
+  ---------------------------- ------ ------ ------ ------ ------ ------ ------
+  File                           stmt   bran   cond    sub    pod   time  total
+  ---------------------------- ------ ------ ------ ------ ------ ------ ------
+  blib/lib/DBD/Mock.pm           92.0   86.6   77.9   95.3    0.0  100.0   89.5
+  Total                          92.0   86.6   77.9   95.3    0.0  100.0   89.5
+  ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO
 
