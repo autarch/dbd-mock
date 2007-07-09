@@ -172,7 +172,7 @@ BEGIN {
         my ($result) = $sth->fetchrow_array(); 
         cmp_ok($result, '==', 10, '... first execute got the right  value'); 
         $sth->execute(125); 
-        my ($result) = $sth->fetchrow_array(); 
+        ($result) = $sth->fetchrow_array(); 
         cmp_ok($result, '==', 15, '... second execute got the right value'); 
     }; 
     ok(!$@, '... everything worked as planned'); 
