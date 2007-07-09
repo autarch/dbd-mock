@@ -1,9 +1,19 @@
 Revision history for Perl extension DBD::Mock.
 
-1.34 
-    - Fixed how AutoCommit is handled to avoid $dbh caching (RobK)
+1.35 July 9, 2007
 
-1.33 
+    - Applying path from RT #16951 to return 
+      new result set for repeated calls to 
+      $sth->execute(). Thanks to Marc Beyer for this.
+        - added tests for this
+    - Fixing RT #25892 to make mock_records method 
+      work correctly.
+        - added test for this
+    - applying patch from RT #26604 to fix AutoCommit 
+      behavior. Thanks to Ryan Gerry for this.
+
+1.34 July, 29 2006 
+    - Fixed how AutoCommit is handled to avoid $dbh caching (RobK) 
     - Thanks to Chas Owens for patch and test 
       for the mock_can_prepare, mock_can_execute, 
       and mock_can_fetch features.

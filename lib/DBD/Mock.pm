@@ -6,7 +6,7 @@ sub import {
 }
 
 # --------------------------------------------------------------------------- #
-#   Copyright (c) 2004-2006 Stevan Little, Chris Winters 
+#   Copyright (c) 2004-2007 Stevan Little, Chris Winters 
 #   (spawned from original code Copyright (c) 1994 Tim Bunce)
 # --------------------------------------------------------------------------- #
 #   You may distribute under the terms of either the GNU General Public
@@ -18,7 +18,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes
@@ -110,7 +110,10 @@ sub connect {
     }
 
     # Need to protect AutoCommit from $dbh caching - RobK.
-    my $autocommit = delete $attributes->{ 'AutoCommit' };
+    my $autocommit = 1;
+    if( exists $attributes->{ 'AutoCommit' } ) {
+        $autocommit = delete $attributes->{ 'AutoCommit' };
+    }
 
     my $dbh = DBI::_new_dbh($drh, {
         Name                   => $dbname,       
@@ -128,7 +131,7 @@ sub connect {
         %{ $attributes },
     }) || return;
 
-    $dbh->STORE( 'AutoCommit' => $autocommit || 1 );
+    $dbh->STORE( 'AutoCommit' => $autocommit );
 
     return $dbh;
 }
@@ -600,6 +603,10 @@ sub execute {
     if (my $session = $dbh->{mock_session}) {
         eval {
             $session->verify_bound_params($dbh, $tracker->bound_params());
+            my $idx = $session->{state_index} - 1;
+            my @results = @{$session->{states}->[$idx]->{results}};
+            shift @results;
+            $tracker->{return_data} = \@results;            
         };
         if ($@) {
             my $session_error = $@;
@@ -826,6 +833,9 @@ sub FETCH {
     elsif ( $attrib eq 'mock_params' ) {
         return $tracker->bound_params;
     }
+    elsif ( $attrib eq 'mock_records' ) {
+        return $tracker->return_data;
+    }    
     elsif ( $attrib eq 'mock_num_records' || $attrib eq 'mock_num_rows' ) {
         return $tracker->num_rows;
     }    
@@ -1602,6 +1612,14 @@ These properties will dispatch to the Driver's properties of the same name.
 
 =head2 Database Driver Methods
 
+=over 4
+
+=item B<last_insert_id>
+
+This returns the value of C<mock_last_insert_id>.
+
+=back
+
 In order to capture begin_work(), commit(), and rollback(), DBD::Mock will create statements for them, as if you had issued them in the appropriate SQL command line program. They will go through the standard prepare()-execute() cycle, meaning that any custom SQL parsers will be triggered and DBD::Mock::Session will need to know about these statements.
 
 =over 4
@@ -1619,6 +1637,7 @@ This will create a statement with SQL of "COMMIT" and no parameters.
 This will create a statement with SQL of "ROLLBACK" and no parameters.
 
 =back
+
 
 =head2 Statement Handle Properties
 
@@ -1974,6 +1993,10 @@ L<http://groups-beta.google.com/group/DBDMock>
 
 =over 4
 
+=item Thanks to Ryan Gerry for his patch in RT #26604
+
+=item Thanks to Marc Beyer for his patch in RT #16951
+
 =item Thanks to Justin DeVuyst for the mock_connect_fail idea
 
 =item Thanks to Thilo Planz for the code for C<bind_param_inout>
@@ -1994,7 +2017,7 @@ L<http://groups-beta.google.com/group/DBDMock>
 
 Copyright (C) 2004 Chris Winters <chris@cwinters.com>
 
-Copyright (C) 2004-2006 Stevan Little <stevan@iinteractive.com>
+Copyright (C) 2004-2007 Stevan Little <stevan@iinteractive.com>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 24;
+use Test::More tests => 29;
 
 BEGIN {
     use_ok('DBD::Mock');
@@ -146,3 +146,35 @@ BEGIN {
         '... everything failed as planned');    
 }
 
+{ 
+    my $dbh = DBI->connect('dbi:Mock:', '', '', { RaiseError => 1,  PrintError => 0 }); 
+    isa_ok($dbh, 'DBI::db'); 
+ 
+    my $session = DBD::Mock::Session->new(( 
+        { 
+            statement    => 'SELECT foo FROM bar WHERE baz = ?', 
+            bound_params => [ 100 ], 
+            results      => [[ 'foo' ], [ 10 ]] 
+        }, 
+        { 
+            statement    => 'SELECT foo FROM bar WHERE baz = ?', 
+            bound_params => [ 125 ], 
+            results      => [[ 'foo' ], [ 15 ]] 
+        }, 
+    )); 
+    isa_ok($session, 'DBD::Mock::Session'); 
+ 
+    $dbh->{mock_session} = $session; 
+ 
+    eval { 
+        my $sth = $dbh->prepare('SELECT foo FROM bar WHERE baz = ?'); 
+        $sth->execute(100); 
+        my ($result) = $sth->fetchrow_array(); 
+        cmp_ok($result, '==', 10, '... first execute got the right  value'); 
+        $sth->execute(125); 
+        my ($result) = $sth->fetchrow_array(); 
+        cmp_ok($result, '==', 15, '... second execute got the right value'); 
+    }; 
+    ok(!$@, '... everything worked as planned'); 
+ 
+}

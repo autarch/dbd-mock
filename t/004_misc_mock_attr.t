@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 26;
+use Test::More tests => 27;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -59,6 +59,12 @@ is_deeply(
     $sth->{mock_fields}, 
     [ 'foo' ], 
     '... our fields is as expected');
+
+# mock_records
+is_deeply(
+    $sth->{mock_records}, 
+    [[1], [2], [3]], 
+    '... we have 3 records');
 
 # mock_num_records
 cmp_ok($sth->{mock_num_records}, '==', 3, '... we have 3 records');

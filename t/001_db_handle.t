@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 16;
+use Test::More tests => 20;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -14,6 +14,8 @@ BEGIN {
     isa_ok($dbh, 'DBI::db'); 
     
     is($dbh->{Name}, '', '... if no db-name is given');
+    cmp_ok( $dbh->{AutoCommit}, '==', 1,
+        '... AutoCommit DB attribute defaults to set' );    
     
     # DBI will handle attributes with 'private_', 'dbi_' or ,
     # 'dbd_' prefixes but all others, we need to handle.
@@ -67,6 +69,23 @@ BEGIN {
         'PrintError DB attribute set in connect()' );
     cmp_ok( $dbh->{AutoCommit}, '==', 1,
         'AutoCommit DB attribute set in connect()' );
+
+    $dbh->disconnect();   
+}
+
+# test setting attributes with negative values during connect
+
+{
+    my $dbh = DBI->connect( 'DBI:Mock:', '', '',
+                            { RaiseError => 0,
+                              PrintError => 0,
+                              AutoCommit => 0 } );
+    cmp_ok( $dbh->{RaiseError}, '==', 0,
+        'RaiseError DB attribute unset in connect()' );
+    cmp_ok( $dbh->{PrintError}, '==', 0,
+        'PrintError DB attribute unset in connect()' );
+    cmp_ok( $dbh->{AutoCommit}, '==', 0,
+        'AutoCommit DB attribute unset in connect()' );
 
     $dbh->disconnect();   
 }
