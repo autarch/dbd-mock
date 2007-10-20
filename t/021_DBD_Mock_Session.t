@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 56;
+use Test::More tests => 59;
 
 BEGIN {
     use_ok('DBD::Mock');
@@ -340,4 +340,22 @@ use DBI;
     ok(defined($@), '... got an error, as expected');
     like($@, qr/^Statement does not match current state \(with CODE ref\) in DBD::Mock::Session \(session\)/, '... got the error we expected');
 
+}
+
+{
+    my $dbh = DBI->connect('dbi:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
+    my $session = DBD::Mock::Session->new('session' => 
+        {
+            statement => 'Some SQL',
+            results   => []
+        }
+    );
+    isa_ok($session, 'DBD::Mock::Session');
+    $dbh->{mock_session} = $session;
+    eval {
+        $dbh->disconnect;
+    };
+    
+    ok(defined($@), '... got an error, as expected');
+    like($@, qr/^DBH->finish called when session still has states left/, '... got the error we expected');
 }

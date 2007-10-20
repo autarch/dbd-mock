@@ -1,7 +1,11 @@
 Revision history for Perl extension DBD::Mock.
 
-1.35 July 9, 2007
+1.36 October 18, 2007
+    - $dbh->last_insert_id() now works as documented
+    - Added a "use 5.006;" in order to put a safeguard on the "use warnings;"
+      statement a little further down.
 
+1.35 July 9, 2007
     - Applying path from RT #16951 to return 
       new result set for repeated calls to 
       $sth->execute(). Thanks to Marc Beyer for this.

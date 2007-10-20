@@ -142,7 +142,7 @@ BEGIN {
     };
     ok($@, '... everything failed as planned');
     like($@, 
-        qr/Session Error\: Bound params do not match in current state in DBD\:\:Mock\:\:Session/, 
+        qr/Session Error\: Bound param 0 do not match in current state in DBD\:\:Mock\:\:Session/, 
         '... everything failed as planned');    
 }
 
