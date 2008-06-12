@@ -1,0 +1,7 @@
+# auto-generated shipit config file.
+steps = FindVersion, ChangeVersion, CheckChangeLog, DistTest, Commit, Tag, MakeDist, DistClean
+
+svn.tagpattern = %v
+svn.tagpattern = https://svn.iinteractive.com/repos/cpan/DBD-Mock/tags/%v
+
+CheckChangeLog.files = Changes
