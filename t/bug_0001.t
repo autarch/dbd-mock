@@ -33,3 +33,6 @@ eval {
     ok( !$sth->execute(3,4), "Bind failed" );
     ok( $sth->execute(1,2), "Bind passed" );
 };
+
+# Shuts up warning when object is destroyed
+undef $dbh->{mock_session};

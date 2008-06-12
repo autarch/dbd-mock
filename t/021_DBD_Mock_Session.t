@@ -358,4 +358,7 @@ use DBI;
     
     ok(defined($@), '... got an error, as expected');
     like($@, qr/^DBH->finish called when session still has states left/, '... got the error we expected');
+
+    # Shuts up warning when object is destroyed
+    undef $dbh->{mock_session};
 }

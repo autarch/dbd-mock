@@ -42,6 +42,9 @@ BEGIN {
         cmp_ok($result, '==', 15, '... got the right value');
     };
     ok(!$@, '... everything worked as planned');
+
+    # Shuts up warning when object is destroyed
+    undef $dbh->{mock_session};
 }
 
 {
@@ -90,6 +93,9 @@ BEGIN {
         cmp_ok($sth->rows(), '==', 2, '... got the right number of affected rows');
     };
     ok(!$@, '... third state worked as planned');
+
+    # Shuts up warning when object is destroyed
+    undef $dbh->{mock_session};
 }
 
 # check some errors
@@ -118,6 +124,9 @@ BEGIN {
     like($@, 
         qr/Session Error\: Not the same number of bound params in current state in DBD\:\:Mock\:\:Session/, 
         '... everything failed as planned');    
+
+    # Shuts up warning when object is destroyed
+    undef $dbh->{mock_session};
 }
 
 {
@@ -144,6 +153,9 @@ BEGIN {
     like($@, 
         qr/Session Error\: Bound param 0 do not match in current state in DBD\:\:Mock\:\:Session/, 
         '... everything failed as planned');    
+
+    # Shuts up warning when object is destroyed
+    undef $dbh->{mock_session};
 }
 
 { 
@@ -176,5 +188,7 @@ BEGIN {
         cmp_ok($result, '==', 15, '... second execute got the right value'); 
     }; 
     ok(!$@, '... everything worked as planned'); 
- 
+
+    # Shuts up warning when object is destroyed
+    undef $dbh->{mock_session};
 }
