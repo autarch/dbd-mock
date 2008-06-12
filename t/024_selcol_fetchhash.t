@@ -3,7 +3,7 @@ use 5.006;
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 8;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -67,6 +67,17 @@ my $dbh = DBI->connect( 'DBI:Mock:', '', '' );
   isa_ok(\$res, "REF");
   isa_ok($res, "ARRAY");
   is_deeply($res, \@expected, "Checking if selectcol_arrayref works.");
+}
+
+{
+  my %expected = (1 => 'european', 27 => 'african');
+  
+  my $res = eval { $dbh->selectcol_arrayref($swallow_sql, {Columns=>[1, 2]}) };
+
+  is_deeply(
+    { @{$res || []} }, \%expected,
+    'Checking if selectcol_arrayref works with Columns attribute'
+  );
 }
 
 is_deeply(

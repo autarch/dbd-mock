@@ -1,7 +1,13 @@
 Revision history for Perl extension DBD::Mock.
 
-1.37
+1.37 
+    - New co-maintainer (aka sucker), Dave Rolsky
     - Added support for $sth->bind_col() and $sth->bind_cols().
+    - Fixed and clarified docs for the mock_last_insert_id and
+      mock_start_insert_id attributes. The previous docs were both
+      wrong and confusing.
+    - Implemented support for the Column attribute with
+      selectcol_arrayref. Patch by Matt Lawrence. RT Bug #35145.
 
 1.36 October 18, 2007
     - $dbh->last_insert_id() now works as documented

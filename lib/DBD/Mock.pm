@@ -395,9 +395,14 @@ sub selectcol_arrayref {
     # something went wrong, and so return undef.
     return undef unless defined $a_ref || ref($a_ref) ne 'ARRAY';
 
+    my @cols = 0;
+    if (ref $attrib->{Columns} eq 'ARRAY') {
+        @cols = map { $_ - 1 } @{$attrib->{Columns}};
+    }
+
     # if we do get something then we
     # grab all the columns out of it.
-    return [ map { $_->[0] } @{$a_ref} ]
+    return [ map { @$_[@cols] } @{$a_ref} ]
 }
 
 {
