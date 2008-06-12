@@ -1,5 +1,8 @@
 Revision history for Perl extension DBD::Mock.
 
+1.37
+    - Added support for $sth->bind_col() and $sth->bind_cols().
+
 1.36 October 18, 2007
     - $dbh->last_insert_id() now works as documented
     - Added a "use 5.006;" in order to put a safeguard on the "use warnings;"

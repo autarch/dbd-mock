@@ -568,6 +568,14 @@ use warnings;
 
 $DBD::Mock::st::imp_data_size = 0;
 
+sub bind_col {
+    my ($sth, $param_num, $ref, $attr) = @_;
+
+    my $tracker = $sth->FETCH( 'mock_my_history' );
+    $tracker->bind_col( $param_num, $ref );
+    return 1;
+}
+
 sub bind_param {
     my ($sth, $param_num, $val, $attr) = @_;
     my $tracker = $sth->FETCH( 'mock_my_history' );
@@ -668,7 +676,16 @@ sub fetch {
     $dbh->{mock_can_fetch}++ if $dbh->{mock_can_fetch} < 0;
 
     my $tracker = $sth->FETCH( 'mock_my_history' );
-    return $tracker->next_record;
+
+    my $record = $tracker->next_record;
+
+    if ( my @cols = $tracker->bind_cols() ) {
+        for my $i ( grep { ref $cols[$_] } 0..$#cols ) {
+            ${ $cols[$i] } = $record->[$i];
+        }
+    }
+
+    return $record;
 }
 
 sub fetchrow_array {
@@ -983,6 +1000,11 @@ sub num_params {
     return scalar @{$self->{bound_params}};
 }
 
+sub bind_col {
+    my ($self, $param_num, $ref) = @_;
+    $self->{bind_cols}->[$param_num - 1] = $ref;
+}
+
 sub bound_param {
     my ($self, $param_num, $value) = @_;
     $self->{bound_params}->[$param_num - 1] = $value;
@@ -992,6 +1014,11 @@ sub bound_param {
 sub bound_param_trailing {
     my ($self, @values) = @_;
     push @{$self->{bound_params}}, @values;
+}
+
+sub bind_cols {
+    my $self = shift;
+    return @{$self->{bind_cols} || []};
 }
 
 sub bind_params {
