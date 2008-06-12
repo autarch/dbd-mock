@@ -1615,9 +1615,7 @@ This attribute can be used to set a current DBD::Mock::Session object. For more 
 
 This attribute is incremented each time an INSERT statement is passed to C<prepare> on a per-handle basis. It's starting value can be set with  the 'mock_start_insert_id' attribute (see below).
 
-This attribute also can be used with an ARRAY ref parameter, it's behavior is slightly different in that instead of incrementing the value for every C<prepare> it will only increment for each C<execute>. This allows it to be used over multiple C<execute> calls in a single C<$sth>. It's usage looks like this:
-
-  $dbh->{mock_last_insert_id} = [ 'Foo', 10 ];
+  $dbh->{mock_start_insert_id} = 10;
 
   my $sth = $dbh->prepare('INSERT INTO Foo (foo, bar) VALUES(?, ?)');
 
@@ -1632,6 +1630,25 @@ For more examples, please refer to the test file F<t/025_mock_last_insert_id.t>.
 =item B<mock_start_insert_id>
 
 This attribute can be used to set a start value for the 'mock_last_insert_id' attribute. It can also be used to effectively reset the 'mock_last_insert_id' attribute as well.
+
+This attribute also can be used with an ARRAY ref parameter, it's behavior is slightly different in that instead of incrementing the value for every C<prepare> it will only increment for each C<execute>. This allows it to be used over multiple C<execute> calls in a single C<$sth>. It's usage looks like this:
+
+  $dbh->{mock_start_insert_id} = [ 'Foo', 10 ];
+  $dbh->{mock_start_insert_id} = [ 'Baz', 20 ];
+
+  my $sth1 = $dbh->prepare('INSERT INTO Foo (foo, bar) VALUES(?, ?)');
+
+  my $sth2 = $dbh->prepare('INSERT INTO Baz (baz, buz) VALUES(?, ?)');
+
+  $sth1->execute(1, 2);
+  # $dbh->{mock_last_insert_id} == 10
+
+  $sth2->execute(3, 4);
+  # $dbh->{mock_last_insert_id} == 20
+
+Note that DBD::Mock's matching of table names in 'INSERT' statements is fairly simple, so if your table names are quoted in the insert statement (C<INSERT INTO "Foo">) then you need to quote the name for C<mock_start_insert_id>:
+
+  $dbh->{mock_start_insert_id} = [ q{"Foo"}, 10 ];
 
 =item B<mock_add_parser>
 
