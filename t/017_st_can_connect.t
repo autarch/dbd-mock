@@ -9,8 +9,8 @@ BEGIN {
 
 my $dbh = DBI->connect('DBI:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
 isa_ok($dbh, "DBI::db");
-is($dbh->{RaiseError}, 1, '... RaiseError is set correctly');
-is($dbh->{PrintError}, 0, '... PrintError is set correctly');
+ok($dbh->{RaiseError}, '... RaiseError is set correctly');
+ok(! $dbh->{PrintError}, '... PrintError is set correctly');
 
 my $sth_exec = $dbh->prepare('SELECT foo FROM bar');
 isa_ok($sth_exec, "DBI::st");
