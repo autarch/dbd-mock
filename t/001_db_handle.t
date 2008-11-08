@@ -116,7 +116,7 @@ BEGIN {
                             } );
     $dbh->{RaiseError} = 1;
     $dbh->{PrintError} = 1;
-    $dbh->{PrintWarn} = 1;
+    $dbh->{PrintWarn}  = 1;
     $dbh->{AutoCommit} = 1;
 
     ok( $dbh->{RaiseError},
