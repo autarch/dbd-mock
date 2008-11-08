@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 23;
+use Test::More tests => 24;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -14,7 +14,7 @@ BEGIN {
     isa_ok($dbh, 'DBI::db'); 
     
     is($dbh->{Name}, '', '... if no db-name is given');
-    is( $dbh->{AutoCommit}, 1,
+    ok( $dbh->{AutoCommit},
         '... AutoCommit DB attribute defaults to set' );    
     
     # DBI will handle attributes with 'private_', 'dbi_' or ,
@@ -46,11 +46,11 @@ BEGIN {
     $dbh->{PrintError} = 1;
     $dbh->{AutoCommit} = 1;
    
-    is( $dbh->{RaiseError}, 1,
+    ok( $dbh->{RaiseError},
         'RaiseError DB attribute set after connect()' );
-    is( $dbh->{PrintError}, 1,
+    ok( $dbh->{PrintError},
         'PrintError DB attribute set after connect()' );
-    is( $dbh->{AutoCommit}, 1,
+    ok( $dbh->{AutoCommit},
         'AutoCommit DB attribute set after connect()' );
             
     $dbh->disconnect();       
@@ -63,11 +63,11 @@ BEGIN {
                             { RaiseError => 1,
                               PrintError => 1,
                               AutoCommit => 1 } );
-    is( $dbh->{RaiseError}, 1,
+    ok( $dbh->{RaiseError},
         'RaiseError DB attribute set in connect()' );
-    is( $dbh->{PrintError}, 1,
+    ok( $dbh->{PrintError},
         'PrintError DB attribute set in connect()' );
-    is( $dbh->{AutoCommit}, 1,
+    ok( $dbh->{AutoCommit},
         'AutoCommit DB attribute set in connect()' );
 
     $dbh->disconnect();   
@@ -80,11 +80,11 @@ BEGIN {
                             { RaiseError => 0,
                               PrintError => 0,
                               AutoCommit => 0 } );
-    is( $dbh->{RaiseError}, 0,
+    ok( ! $dbh->{RaiseError},
         'RaiseError DB attribute unset in connect()' );
-    is( $dbh->{PrintError}, 0,
+    ok( ! $dbh->{PrintError},
         'PrintError DB attribute unset in connect()' );
-    is( $dbh->{AutoCommit}, 0,
+    ok( ! $dbh->{AutoCommit},
         'AutoCommit DB attribute unset in connect()' );
 
     $dbh->disconnect();   
@@ -119,13 +119,13 @@ BEGIN {
     $dbh->{PrintWarn} = 1;
     $dbh->{AutoCommit} = 1;
 
-    is( $dbh->{RaiseError}, 1,
+    ok( $dbh->{RaiseError},
         'RaiseError DB attribute set in connect() and then changed' );
-    is( $dbh->{PrintError}, 1,
+    ok( $dbh->{PrintError},
         'PrintError DB attribute set in connect() and then changed' );
-    is( $dbh->{PrintWarn}, 1,
+    ok( $dbh->{PrintWarn},
         'PrintWarn DB attribute set in connect() and then changed' );
-    is( $dbh->{AutoCommit}, 1,
+    ok( $dbh->{AutoCommit},
         'AutoCommit DB attribute set in connect() and then changed' );
 
     $dbh->disconnect();   
