@@ -539,7 +539,7 @@ sub STORE {
         return $dbh->SUPER::STORE($attrib, $value);
     }
   else {
-      $dbh->trace_msg("... storing non-driver attribute ($attrib) with value ($value) that DBI wont handle\n");
+      $dbh->trace_msg("... storing non-driver attribute ($attrib) with value ($value) that DBI won't handle\n");
       return $dbh->{$attrib} = $value;
   }
 }
