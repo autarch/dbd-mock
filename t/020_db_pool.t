@@ -10,10 +10,10 @@ BEGIN {
 # check that the pool works
 {
 
-    my $dbh = DBI->connect("DBI:Mock:", '', '');
+    my $dbh = DBI->connect("DBI:Mock:", '', '', {RaiseError => 1 });
     isa_ok($dbh, 'DBD::Mock::Pool::db');
     
-    my $dbh2 = DBI->connect("DBI:Mock:", '', '');
+    my $dbh2 = DBI->connect("DBI:Mock:", '', '', {RaiseError => 1 });
     isa_ok($dbh2, 'DBD::Mock::Pool::db');
     
     is($dbh, $dbh2, '... these handles should be the same');
@@ -28,7 +28,7 @@ BEGIN {
 
 {
     # set up handle from pool
-    my $dbh = DBI->connect("DBI:Mock:", '', '');
+    my $dbh = DBI->connect("DBI:Mock:", '', '', {RaiseError => 1 });
     isa_ok($dbh, 'DBD::Mock::Pool::db');
     
     $dbh->{mock_add_resultset} = [[ 'foo', 'bar', 'baz' ], [ 1, 2, 3 ]];
@@ -38,7 +38,7 @@ BEGIN {
 
 {
     # execute a statement, and expect the results
-    my $dbh = DBI->connect("DBI:Mock:", '', '');
+    my $dbh = DBI->connect("DBI:Mock:", '', '', {RaiseError => 1 });
     isa_ok($dbh, 'DBD::Mock::Pool::db');
     
     my $sth = $dbh->prepare("SELECT foo, bar, baz FROM whatever");
@@ -54,7 +54,7 @@ BEGIN {
 }
 
 {
-    # check our statement istory
+    # check our statement history
     my $dbh = DBI->connect("DBI:Mock:", '', '');
     isa_ok($dbh, 'DBD::Mock::Pool::db');
     
