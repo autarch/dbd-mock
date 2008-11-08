@@ -1,5 +1,8 @@
 Revision history for Perl extension DBD::Mock.
 
+1.38
+    - Fixed incorrect use of no_plan in t/025_mock_last_insert_id.t.
+
 1.37 June 12, 2008
     - New co-maintainer (aka sucker), Dave Rolsky
     - Added support for $sth->bind_col() and $sth->bind_cols()
