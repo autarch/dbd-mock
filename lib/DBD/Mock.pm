@@ -13,14 +13,14 @@ sub import {
 #   License or the Artistic License, as specified in the Perl README file.
 # --------------------------------------------------------------------------- #
 
-use 5.006;
+use 5.008001;
 
 use strict;
 use warnings;
 
 require DBI;
 
-our $VERSION = '1.37';
+our $VERSION = '1.38';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes

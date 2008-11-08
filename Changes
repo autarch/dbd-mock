@@ -1,6 +1,7 @@
 Revision history for Perl extension DBD::Mock.
 
 1.38 November 8, 2008
+    - Bumped minimum Perl to 5.8.1, since that's what DBI requires.
     - Fixed incorrect use of no_plan in t/025_mock_last_insert_id.t.
     - The handling of attributes passed to the constructor was not
       correct. The major symptom was that attributes (such as
