@@ -105,35 +105,26 @@ sub connect {
         return;
     }
     $attributes ||= {};
+
     if ($dbname && $DBD::Mock::AttributeAliasing) {
         # this is the DB we are mocking
         $attributes->{mock_attribute_aliases} = DBD::Mock::_get_mock_attribute_aliases($dbname);
         $attributes->{mock_database_name} = $dbname;
     }
 
-    # Need to protect AutoCommit from $dbh caching - RobK.
-    my $autocommit = 1;
-    if( exists $attributes->{ 'AutoCommit' } ) {
-        $autocommit = delete $attributes->{ 'AutoCommit' };
-    }
+    # holds statement parsing coderefs/objects
+    $attributes->{mock_parser} = [];
+    # holds all statements applied to handle until manually cleared
+    $attributes->{mock_statement_history} = [];
+    # ability to fake a failed DB connection
+    $attributes->{mock_can_connect} = 1;
+    # ability to make other things fail :)
+    $attributes->{mock_can_prepare} = 1;
+    $attributes->{mock_can_execute} = 1;
+    $attributes->{mock_can_fetch}   = 1;
 
-    my $dbh = DBI::_new_dbh($drh, {
-        Name                   => $dbname,
-        # holds statement parsing coderefs/objects
-        mock_parser            => [],
-        # holds all statements applied to handle until manually cleared
-        mock_statement_history => [],
-        # ability to fake a failed DB connection
-        mock_can_connect       => 1,
-        # ability to make other things fail :)
-        mock_can_prepare       => 1,
-        mock_can_execute       => 1,
-        mock_can_fetch         => 1,
-        # rest of attributes
-        %{ $attributes },
-    }) || return;
-
-    $dbh->STORE( 'AutoCommit' => $autocommit );
+    my $dbh = DBI::_new_dbh($drh, {Name => $dbname})
+        || return;
 
     return $dbh;
 }
@@ -405,16 +396,11 @@ sub selectcol_arrayref {
     return [ map { @$_[@cols] } @{$a_ref} ]
 }
 
-{
-    my %autocommit;
 sub FETCH {
-    my ( $dbh, $attrib ) = @_;
+    my ( $dbh, $attrib, $value ) = @_;
     $dbh->trace_msg( "Fetching DB attrib '$attrib'\n" );
-    if ($attrib eq 'AutoCommit') {
-        $dbh->trace_msg( "Fetching AutoCommit\n" );
-        return $autocommit{$dbh};
-    }
-     elsif ($attrib eq 'Active') {
+
+    if ($attrib eq 'Active') {
         return $dbh->{mock_can_connect};
     }
     elsif ($attrib eq 'mock_all_history') {
@@ -450,11 +436,14 @@ sub FETCH {
 sub STORE {
     my ( $dbh, $attrib, $value ) = @_;
     $dbh->trace_msg( "Storing DB attribute '$attrib' with '" . (defined($value) ? $value : 'undef') . "'\n" );
+
     if ($attrib eq 'AutoCommit') {
-        $autocommit{$dbh} = $value;
-        return $value;
+        # These are magic DBI values that say we can handle AutoCommit
+        # internally as well
+        $value = ($value) ? -901 : -900;
     }
-    elsif ( $attrib eq 'mock_clear_history' ) {
+
+    if ( $attrib eq 'mock_clear_history' ) {
         if ( $value ) {
             $dbh->{mock_statement_history} = [];
         }
@@ -542,7 +531,6 @@ sub STORE {
       $dbh->trace_msg("... storing non-driver attribute ($attrib) with value ($value) that DBI won't handle\n");
       return $dbh->{$attrib} = $value;
   }
-}
 }
 
 sub DESTROY {
@@ -932,11 +920,14 @@ use warnings;
 my $connection;
 
 sub connect {
-    my $class = "DBD::Mock::Pool";
-    $class = shift unless ref($_[0]);
-    my ($driver_handle, $username, $password, $attributes) = @_;
-    $connection = bless $driver_handle->connect(), "DBD::Mock::Pool::db" unless $connection;
-    return $connection;
+    return $connection if $connection;
+
+    # according to the code before my tweaks, this could be a class
+    # name, but it was never used - DR, 2008-11-08
+    shift unless ref $_[0];
+
+    my $drh = shift;
+    return $connection = bless $drh->connect(@_), 'DBD::Mock::Pool::db';
 }
 
 package DBD::Mock::Pool::db;
