@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 20;
+use Test::More tests => 23;
 
 BEGIN {
     use_ok('DBD::Mock');  
@@ -73,7 +73,7 @@ BEGIN {
     $dbh->disconnect();   
 }
 
-# test setting attributes with negative values during connect
+# test setting attributes with false values during connect
 
 {
     my $dbh = DBI->connect( 'DBI:Mock:', '', '',
@@ -105,4 +105,28 @@ BEGIN {
         [ 'DBI:Mock:', 'DBI:Mock:foo' ],
         '... got the right data sources');
 
+}
+
+{
+    my $dbh = DBI->connect( 'DBI:Mock:', '', '',
+                            { RaiseError => 0,
+                              PrintError => 0,
+                              PrintWarn  => 0,
+                              AutoCommit => 0,
+                            } );
+    $dbh->{RaiseError} = 1;
+    $dbh->{PrintError} = 1;
+    $dbh->{PrintWarn} = 1;
+    $dbh->{AutoCommit} = 1;
+
+    is( $dbh->{RaiseError}, 1,
+        'RaiseError DB attribute set in connect() and then changed' );
+    is( $dbh->{PrintError}, 1,
+        'PrintError DB attribute set in connect() and then changed' );
+    is( $dbh->{PrintWarn}, 1,
+        'PrintWarn DB attribute set in connect() and then changed' );
+    is( $dbh->{AutoCommit}, 1,
+        'AutoCommit DB attribute set in connect() and then changed' );
+
+    $dbh->disconnect();   
 }
