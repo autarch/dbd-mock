@@ -3,7 +3,7 @@ use 5.006;
 use strict;
 use warnings;
 
-use Test::More no_plan => 1;
+use Test::More tests => 12;
 
 use DBI;
 
