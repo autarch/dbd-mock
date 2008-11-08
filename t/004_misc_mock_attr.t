@@ -13,10 +13,10 @@ my $dbh = DBI->connect('DBI:Mock:', '', '');
 isa_ok($dbh, 'DBI::db'); 
 
 $dbh->{AutoCommit} = 1;
-is($dbh->{AutoCommit}, 1, '... it handles AutoCommit as well');
+ok($dbh->{AutoCommit}, '... it handles AutoCommit as well');
 
 $dbh->{AutoCommit} = 0;
-is($dbh->{AutoCommit}, 0, '... and turns off AutoCommit as well');
+ok(! $dbh->{AutoCommit}, '... and turns off AutoCommit as well');
 
 for (0 .. 5) {
     my $sth = $dbh->prepare('SELECT * FROM foo');
