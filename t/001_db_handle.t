@@ -14,25 +14,25 @@ BEGIN {
     isa_ok($dbh, 'DBI::db'); 
     
     is($dbh->{Name}, '', '... if no db-name is given');
-    cmp_ok( $dbh->{AutoCommit}, '==', 1,
+    is( $dbh->{AutoCommit}, 1,
         '... AutoCommit DB attribute defaults to set' );    
     
     # DBI will handle attributes with 'private_', 'dbi_' or ,
     # 'dbd_' prefixes but all others, we need to handle.
     
     $dbh->{mysql_insertid} = 10;
-    cmp_ok($dbh->{mysql_insertid}, '==', 10, '... this attribute should be 10');
+    is($dbh->{mysql_insertid}, 10, '... this attribute should be 10');
     
     # DBI will handle these
     
     $dbh->{private_insert_id} = 15;
-    cmp_ok($dbh->{private_insert_id}, '==', 15, '... this attribute should be 15');    
+    is($dbh->{private_insert_id}, 15, '... this attribute should be 15');    
     
     $dbh->{dbi_attribute} = 2000;
-    cmp_ok($dbh->{dbi_attribute}, '==', 2000, '... this attribute should be 2000');  
+    is($dbh->{dbi_attribute}, 2000, '... this attribute should be 2000');  
     
     $dbh->{dbd_attr} = 15_000;
-    cmp_ok($dbh->{dbd_attr}, '==', 15_000, '... this attribute should be 15,000');  
+    is($dbh->{dbd_attr}, 15_000, '... this attribute should be 15,000');  
     
     $dbh->disconnect();     
 }   
@@ -46,11 +46,11 @@ BEGIN {
     $dbh->{PrintError} = 1;
     $dbh->{AutoCommit} = 1;
    
-    cmp_ok( $dbh->{RaiseError}, '==', 1,
+    is( $dbh->{RaiseError}, 1,
         'RaiseError DB attribute set after connect()' );
-    cmp_ok( $dbh->{PrintError}, '==', 1,
+    is( $dbh->{PrintError}, 1,
         'PrintError DB attribute set after connect()' );
-    cmp_ok( $dbh->{AutoCommit}, '==', 1,
+    is( $dbh->{AutoCommit}, 1,
         'AutoCommit DB attribute set after connect()' );
             
     $dbh->disconnect();       
@@ -63,11 +63,11 @@ BEGIN {
                             { RaiseError => 1,
                               PrintError => 1,
                               AutoCommit => 1 } );
-    cmp_ok( $dbh->{RaiseError}, '==', 1,
+    is( $dbh->{RaiseError}, 1,
         'RaiseError DB attribute set in connect()' );
-    cmp_ok( $dbh->{PrintError}, '==', 1,
+    is( $dbh->{PrintError}, 1,
         'PrintError DB attribute set in connect()' );
-    cmp_ok( $dbh->{AutoCommit}, '==', 1,
+    is( $dbh->{AutoCommit}, 1,
         'AutoCommit DB attribute set in connect()' );
 
     $dbh->disconnect();   
@@ -80,11 +80,11 @@ BEGIN {
                             { RaiseError => 0,
                               PrintError => 0,
                               AutoCommit => 0 } );
-    cmp_ok( $dbh->{RaiseError}, '==', 0,
+    is( $dbh->{RaiseError}, 0,
         'RaiseError DB attribute unset in connect()' );
-    cmp_ok( $dbh->{PrintError}, '==', 0,
+    is( $dbh->{PrintError}, 0,
         'PrintError DB attribute unset in connect()' );
-    cmp_ok( $dbh->{AutoCommit}, '==', 0,
+    is( $dbh->{AutoCommit}, 0,
         'AutoCommit DB attribute unset in connect()' );
 
     $dbh->disconnect();   

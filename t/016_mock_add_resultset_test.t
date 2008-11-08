@@ -31,7 +31,7 @@ $dbh->{mock_add_resultset} = {
     my ($result) = $sth->fetchrow_array();
     
     
-    cmp_ok($result, '==', 10, '... got the result we expected');
+    is($result, 10, '... got the result we expected');
     
     $sth->finish();
 }
@@ -50,7 +50,7 @@ $dbh->{mock_add_resultset} = {
     
     my ($result) = $sth->fetchrow_array();
 
-    cmp_ok($result, '==', 50, '... got the result we expected');
+    is($result, 50, '... got the result we expected');
     
     $sth->finish();
 }
@@ -65,7 +65,7 @@ $dbh->{mock_add_resultset} = {
     
     my ($result) = $sth->fetchrow_array();
 
-    cmp_ok($result, '==', 50, '... got the result we expected');
+    is($result, 50, '... got the result we expected');
     
     $sth->finish();
 }
@@ -80,7 +80,7 @@ $dbh->{mock_add_resultset} = {
 
     my ($result) = $sth->fetchrow_array();
 
-    cmp_ok($result, '==', 50, '... got the result we expected');
+    is($result, 50, '... got the result we expected');
     
     $sth->finish();
 }

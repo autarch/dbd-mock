@@ -13,21 +13,21 @@ my $dbh = DBI->connect('DBI:Mock:', '', '');
 isa_ok($dbh, 'DBI::db'); 
 
 $dbh->{AutoCommit} = 1;
-cmp_ok($dbh->{AutoCommit}, '==', 1, '... it handles AutoCommit as well');
+is($dbh->{AutoCommit}, 1, '... it handles AutoCommit as well');
 
 $dbh->{AutoCommit} = 0;
-cmp_ok($dbh->{AutoCommit}, '==', 0, '... and turns off AutoCommit as well');
+is($dbh->{AutoCommit}, 0, '... and turns off AutoCommit as well');
 
 for (0 .. 5) {
     my $sth = $dbh->prepare('SELECT * FROM foo');
     $sth->execute();
 }
 
-cmp_ok(scalar(@{$dbh->{mock_all_history}}), '==', 6, '... we have 6 statements');
+is(scalar(@{$dbh->{mock_all_history}}), 6, '... we have 6 statements');
 
 $dbh->{mock_clear_history} = 1;
 
-cmp_ok(scalar(@{$dbh->{mock_all_history}}), '==', 0, '... we have 0 statements');
+is(scalar(@{$dbh->{mock_all_history}}), 0, '... we have 0 statements');
 
 # test the misc. attributes of $sth
 
@@ -67,10 +67,10 @@ is_deeply(
     '... we have 3 records');
 
 # mock_num_records
-cmp_ok($sth->{mock_num_records}, '==', 3, '... we have 3 records');
+is($sth->{mock_num_records}, 3, '... we have 3 records');
 
 # mock_current_record_num
-cmp_ok($sth->{mock_current_record_num}, '==', 0, '... we are at record number 0');
+is($sth->{mock_current_record_num}, 0, '... we are at record number 0');
 
 # mock_is_finished
 is($sth->{mock_is_finished}, 'no', '... we are not yet finished');
@@ -79,8 +79,8 @@ is($sth->{mock_is_finished}, 'no', '... we are not yet finished');
 ok(!$sth->{mock_is_depleted}, '... nor are we depleted');
 
 for (1 .. 3) {
-    cmp_ok(($sth->fetchrow_array())[0], '==', $_, '... got the expected row');
-    cmp_ok($sth->{mock_current_record_num}, '==', $_, '... we are at record number ' . $_);    
+    is(($sth->fetchrow_array())[0], $_, '... got the expected row');
+    is($sth->{mock_current_record_num}, $_, '... we are at record number ' . $_);    
 }
 
 # mock_is_depleted

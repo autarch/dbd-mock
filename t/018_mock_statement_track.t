@@ -35,15 +35,15 @@ BEGIN {
     my $st_track = DBD::Mock::StatementTrack->new();
     isa_ok($st_track, 'DBD::Mock::StatementTrack');
 
-    cmp_ok($st_track->num_fields(), '==', 0, '... we have no fields in the default');
+    is($st_track->num_fields(), 0, '... we have no fields in the default');
     is_deeply($st_track->fields(), [], '... we have no fields in the default');
     
-    cmp_ok($st_track->num_params(), '==', 0, '... we have no bound params in the default');
+    is($st_track->num_params(), 0, '... we have no bound params in the default');
     is_deeply($st_track->bound_params(), [], '... we have no bound params in the default');
     
     is_deeply($st_track->return_data(), [], '... we have no return data in the default');
     
-    cmp_ok($st_track->current_record_num(), '==', 0, '... our current record num is 0 in the default');
+    is($st_track->current_record_num(), 0, '... our current record num is 0 in the default');
     
     is($st_track->statement(), '', '... our statement is a blank string in the default');
     is($st_track->is_executed(), 'no', '... our statement is not executed in the default');
@@ -53,7 +53,7 @@ BEGIN {
     
     is($st_track->is_finished(), 'no', '... our statement is not finished in the default');
     
-    cmp_ok($st_track->is_active(), '==', 0, '... the default state is not active');
+    is($st_track->is_active(), 0, '... the default state is not active');
 }
     
 { # check a pre-defined state
@@ -68,15 +68,15 @@ BEGIN {
     my $st_track = DBD::Mock::StatementTrack->new(%params);
     isa_ok($st_track, 'DBD::Mock::StatementTrack');
 
-    cmp_ok($st_track->num_fields(), '==', 3, '... we have the expected num of fields');
+    is($st_track->num_fields(), 3, '... we have the expected num of fields');
     is_deeply($st_track->fields(), $params{fields}, '... we have the expected fields');
     
-    cmp_ok($st_track->num_params(), '==', 1, '... we have the expected num of bound params');
+    is($st_track->num_params(), 1, '... we have the expected num of bound params');
     is_deeply($st_track->bound_params(), $params{bound_params}, '... we have the expected bound params');
     
     is_deeply($st_track->return_data(), $params{return_data}, '... we have the expected return data');
     
-    cmp_ok($st_track->current_record_num(), '==', 0, '... our current record num is 0 in the default');
+    is($st_track->current_record_num(), 0, '... our current record num is 0 in the default');
     
     is($st_track->statement(), $params{statement}, '... our statement as expected ');
     is($st_track->is_executed(), 'no', '... our statement is not executed');
@@ -85,7 +85,7 @@ BEGIN {
     
     is($st_track->is_finished(), 'no', '... our statement is not finished');
     
-    cmp_ok($st_track->is_active(), '==', 0, '... the default state is active');
+    is($st_track->is_active(), 0, '... the default state is active');
     
 # now lets alter that state 
 # and make sure changes reflect
@@ -101,7 +101,7 @@ BEGIN {
             [ 'baz', 'foo', 'bar', 'foobar' ], 
             '... we have the expected bound params');    
             
-    cmp_ok($st_track->num_params(), '==', 4, '... we have the expected num of bound params');    
+    is($st_track->num_params(), 4, '... we have the expected num of bound params');    
     
     {
         my $old_SQL = $st_track->statement();
@@ -110,7 +110,7 @@ BEGIN {
         $st_track->statement($SQL);
         
         is($st_track->statement(), $SQL, '... our statement as expected ');  
-        cmp_ok($st_track->is_active(), '==', 0, '... with an INSERT we are not considered active');  
+        is($st_track->is_active(), 0, '... with an INSERT we are not considered active');  
         
         $st_track->statement($old_SQL);  
         
@@ -119,9 +119,9 @@ BEGIN {
     
     $st_track->mark_executed();
     is($st_track->is_executed(), 'yes', '... our statement is now executed');    
-    cmp_ok($st_track->current_record_num(), '==', 0, '... our current record num is 0'); 
+    is($st_track->current_record_num(), 0, '... our current record num is 0'); 
     
-    cmp_ok($st_track->is_active(), '==', 1, '... we are active now that we are executed'); 
+    is($st_track->is_active(), 1, '... we are active now that we are executed'); 
 
     for (1 .. 3) {
         ok(!$st_track->is_depleted(), '... the state is not depleted');     
@@ -129,13 +129,13 @@ BEGIN {
             $st_track->next_record(),
             [ $_, $_, $_ ],
             '... got the next record as expected');
-        cmp_ok($st_track->current_record_num(), '==', $_, '... our current record num is now ' . $_);    
+        is($st_track->current_record_num(), $_, '... our current record num is now ' . $_);    
     }   
     
     ok(!defined($st_track->next_record()), '... no more records'); 
     ok($st_track->is_depleted(), '... we are now depleted'); 
     
-    cmp_ok($st_track->is_active(), '==', 0, '... we are no longer active now that we are depleted');   
+    is($st_track->is_active(), 0, '... we are no longer active now that we are depleted');   
     
     is($st_track->is_finished(), 'no', '... passing in nothing just returns the value');
     

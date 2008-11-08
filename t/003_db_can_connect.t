@@ -13,7 +13,7 @@ BEGIN {
     isa_ok($dbh, "DBI::db");
     # check to be sure this is set, otherwise 
     # the test wont be set up right
-    cmp_ok($dbh->{RaiseError}, '==', 1, '... make sure RaiseError is set correctly');
+    is($dbh->{RaiseError}, 1, '... make sure RaiseError is set correctly');
         
     # check to see it is active in the first place
     ok($dbh->{Active}, '...our handle with the default settting is Active' );
@@ -22,7 +22,7 @@ BEGIN {
     $dbh->{mock_can_connect} = 0;
     
     # check our value is correctly set
-    cmp_ok($dbh->{mock_can_connect}, '==', 0, '... can connect is set to 0');
+    is($dbh->{mock_can_connect}, 0, '... can connect is set to 0');
     
     # and check the side effects of that
     ok(!$dbh->{Active}, '...our handle is no longer Active after setting mock_can_connect');
@@ -49,7 +49,7 @@ BEGIN {
     isa_ok($dbh, "DBI::db");
     # check to be sure this is set, otherwise 
     # the test wont be set up right
-    cmp_ok($dbh->{PrintError}, '==', 1, '... make sure PrintError is set correctly');
+    is($dbh->{PrintError}, 1, '... make sure PrintError is set correctly');
         
     # check to see it is active in the first place
     ok($dbh->{Active}, '...our handle with the default settting is Active' );
@@ -58,7 +58,7 @@ BEGIN {
     $dbh->{mock_can_connect} = 0;
     
     # check our value is correctly set
-    cmp_ok($dbh->{mock_can_connect}, '==', 0, '... can connect is set to 0');
+    is($dbh->{mock_can_connect}, 0, '... can connect is set to 0');
     
     # and check the side effects of that
     ok(!$dbh->{Active}, '...our handle is no longer Active after setting mock_can_connect');

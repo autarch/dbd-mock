@@ -53,7 +53,7 @@ is_deeply(
 }
 
 { # check the mock_connect_fail attribute
-    cmp_ok($drh->{mock_connect_fail}, '==', 0, '... the default is set not to fail');
+    is($drh->{mock_connect_fail}, 0, '... the default is set not to fail');
 
     # make sure the this only affects the initial connect
     my $_dbh = DBI->connect('dbi:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
@@ -61,7 +61,7 @@ is_deeply(
 
     # now no more connections
     $drh->{mock_connect_fail} = 1;
-    cmp_ok($drh->{mock_connect_fail}, '==', 1, '... we are set to fail');
+    is($drh->{mock_connect_fail}, 1, '... we are set to fail');
     
     eval {
         DBI->connect('dbi:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
@@ -76,7 +76,7 @@ is_deeply(
     ok(!$@, '... we should not have an exception here');
     
     $drh->{mock_connect_fail} = 0;
-    cmp_ok($drh->{'mock_connect_fail'}, '==', 0, '... we are set not to fail');
+    is($drh->{'mock_connect_fail'}, 0, '... we are set not to fail');
     
     my $dbh;
     eval {

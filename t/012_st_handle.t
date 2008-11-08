@@ -22,8 +22,8 @@ BEGIN {
     is($sth->{Statement}, 'SELECT Foo, Bar, Baz FROM FooBarBaz', '... got the right statement');
     is($sth->{Database}, $dbh, '... got the right Database handle');
 
-    cmp_ok($sth->{NUM_OF_FIELDS}, '==', 3, '... got the right number of fields');
-    cmp_ok($sth->{NUM_OF_PARAMS}, '==', 0, '... got the right number of params');    
+    is($sth->{NUM_OF_FIELDS}, 3, '... got the right number of fields');
+    is($sth->{NUM_OF_PARAMS}, 0, '... got the right number of params');    
 
     is_deeply(
         $sth->{NAME},

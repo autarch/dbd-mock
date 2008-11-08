@@ -60,7 +60,7 @@ BEGIN {
     
     my $history = $dbh->{mock_all_history};
     
-    cmp_ok(scalar @{$history}, '==', 1, '... we executed 1 statement');    
+    is(scalar @{$history}, 1, '... we executed 1 statement');    
     
     is( $history->[0]->statement(), 
         "SELECT foo, bar, baz FROM whatever", 

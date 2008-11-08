@@ -12,7 +12,7 @@ BEGIN {
     isa_ok($dbh, "DBI::db");
     # check to be sure this is set, otherwise 
     # the test wont be set up right
-    cmp_ok($dbh->{RaiseError}, '==', 1, '... make sure RaiseError is set correctly');
+    is($dbh->{RaiseError}, 1, '... make sure RaiseError is set correctly');
     
     # check parse sub-refs
     
@@ -57,7 +57,7 @@ BEGIN {
     isa_ok($dbh, "DBI::db");
     # check to be sure this is set, otherwise 
     # the test wont be set up right
-    cmp_ok($dbh->{PrintError}, '==', 1, '... make sure PrintError is set correctly'); 
+    is($dbh->{PrintError}, 1, '... make sure PrintError is set correctly'); 
     
     # check parse objects
     
@@ -94,7 +94,7 @@ BEGIN {
     isa_ok($dbh, "DBI::db");
     # check to be sure this is set, otherwise 
     # the test wont be set up right
-    cmp_ok($dbh->{RaiseError}, '==', 1, '... make sure RaiseError is set correctly');
+    is($dbh->{RaiseError}, 1, '... make sure RaiseError is set correctly');
     
     eval { 
         $dbh->{mock_add_parser} = "Fail"; 
@@ -115,7 +115,7 @@ BEGIN {
     isa_ok($dbh, "DBI::db");
     # check to be sure this is set, otherwise 
     # the test wont be set up right
-    cmp_ok($dbh->{PrintError}, '==', 1, '... make sure PrintError is set correctly');
+    is($dbh->{PrintError}, 1, '... make sure PrintError is set correctly');
     
     { # isolate the warn handler 
         local $SIG{__WARN__} = sub {

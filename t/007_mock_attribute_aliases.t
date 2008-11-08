@@ -60,7 +60,7 @@ like($@, qr/Attribute aliases not available for \'Fail\'/, '... got the error we
     
     $sth->execute();    
     
-    cmp_ok($dbh->{mysql_insertid}, '==', 1, '... our alias works');
+    is($dbh->{mysql_insertid}, 1, '... our alias works');
        
 }
 
@@ -83,6 +83,6 @@ like($@, qr/Attribute aliases not available for \'Fail\'/, '... got the error we
     
     $sth->execute();    
     
-    cmp_ok($dbh->{mysql_insertid}, '==', 1, '... our alias works');
+    is($dbh->{mysql_insertid}, 1, '... our alias works');
        
 }

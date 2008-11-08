@@ -11,20 +11,20 @@ BEGIN {
     my $i = DBD::Mock::StatementTrack::Iterator->new([ 1 .. 5 ]);
     isa_ok($i, 'DBD::Mock::StatementTrack::Iterator');
     
-    cmp_ok($i->next(), '==', 1, '... got 1');
-    cmp_ok($i->next(), '==', 2, '... got 2');
-    cmp_ok($i->next(), '==', 3, '... got 3');
-    cmp_ok($i->next(), '==', 4, '... got 4');
-    cmp_ok($i->next(), '==', 5, '... got 5');
+    is($i->next(), 1, '... got 1');
+    is($i->next(), 2, '... got 2');
+    is($i->next(), 3, '... got 3');
+    is($i->next(), 4, '... got 4');
+    is($i->next(), 5, '... got 5');
     ok(!defined($i->next()), '... got undef');
     
     $i->reset();
         
-    cmp_ok($i->next(), '==', 1, '... got 1');
-    cmp_ok($i->next(), '==', 2, '... got 2');
-    cmp_ok($i->next(), '==', 3, '... got 3');
-    cmp_ok($i->next(), '==', 4, '... got 4');
-    cmp_ok($i->next(), '==', 5, '... got 5');
+    is($i->next(), 1, '... got 1');
+    is($i->next(), 2, '... got 2');
+    is($i->next(), 3, '... got 3');
+    is($i->next(), 4, '... got 4');
+    is($i->next(), 5, '... got 5');
     ok(!defined($i->next()), '... got undef');    
 }
 

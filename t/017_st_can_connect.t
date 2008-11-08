@@ -9,8 +9,8 @@ BEGIN {
 
 my $dbh = DBI->connect('DBI:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
 isa_ok($dbh, "DBI::db");
-cmp_ok($dbh->{RaiseError}, '==', 1, '... RaiseError is set correctly');
-cmp_ok($dbh->{PrintError}, '==', 0, '... PrintError is set correctly');
+is($dbh->{RaiseError}, 1, '... RaiseError is set correctly');
+is($dbh->{PrintError}, 0, '... PrintError is set correctly');
 
 my $sth_exec = $dbh->prepare('SELECT foo FROM bar');
 isa_ok($sth_exec, "DBI::st");
@@ -19,7 +19,7 @@ isa_ok($sth_exec, "DBI::st");
 $dbh->{mock_can_connect} = 0;
 
 # check our value is correctly set
-cmp_ok($dbh->{mock_can_connect}, '==', 0, '... can connect is set to 0');
+is($dbh->{mock_can_connect}, 0, '... can connect is set to 0');
 
 # and check the side effects of that
 ok(!$dbh->{Active}, '... the handle is not Active');
@@ -36,7 +36,7 @@ like($@, qr/No connection present/, '... we got the expected execption');
 $dbh->{mock_can_connect} = 1;
 
 # check our value is correctly set
-cmp_ok($dbh->{mock_can_connect}, '==', 1, '... can connect is set to 1');
+is($dbh->{mock_can_connect}, 1, '... can connect is set to 1');
 
 # and check the side effects of that
 ok($dbh->{Active}, '... the handle is Active');
@@ -60,7 +60,7 @@ is_deeply($row, [ qw(this that) ], '... we got back the expected data in the fir
 $dbh->{mock_can_connect} = 0;
 
 # check our value is correctly set
-cmp_ok($dbh->{mock_can_connect}, '==', 0, '... can connect is set to 0');
+is($dbh->{mock_can_connect}, 0, '... can connect is set to 0');
 
 # and check the side effects of that
 ok(!$dbh->{Active}, '... the handle is not Active');

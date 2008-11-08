@@ -1372,7 +1372,7 @@ To do that our test might look like:
 
   # Now query that history record to
   # see if our expectations match reality
-  cmp_ok(scalar(@{$history}), '==', 1, 'Correct number of statements executed' ;
+  is(scalar(@{$history}), 1, 'Correct number of statements executed' ;
 
   my $login_st = $history->[0];
   like($login_st->statement,
@@ -1380,7 +1380,7 @@ To do that our test might look like:
       'Correct statement generated' );
 
   my $params = $login_st->bound_params;
-  cmp_ok(scalar(@{$params}), '==', 1, 'Correct number of parameters bound');
+  is(scalar(@{$params}), 1, 'Correct number of parameters bound');
   is($params->[0], $login_name, 'Correct value for parameter 1' );
 
   # Reset the handle for future operations

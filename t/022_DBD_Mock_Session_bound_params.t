@@ -31,7 +31,7 @@ BEGIN {
         my $sth = $dbh->prepare('SELECT foo FROM bar WHERE baz = ?');
         $sth->execute(100);
         my ($result) = $sth->fetchrow_array();
-        cmp_ok($result, '==', 10, '... got the right value');        
+        is($result, 10, '... got the right value');        
     };
     ok(!$@, '... everything worked as planned');
     
@@ -39,7 +39,7 @@ BEGIN {
         my $sth = $dbh->prepare('SELECT bar FROM foo WHERE baz = ?');
         $sth->execute(125);
         my ($result) = $sth->fetchrow_array();
-        cmp_ok($result, '==', 15, '... got the right value');
+        is($result, 15, '... got the right value');
     };
     ok(!$@, '... everything worked as planned');
 
@@ -75,7 +75,7 @@ BEGIN {
         my $sth = $dbh->prepare('SELECT foo FROM bar WHERE baz = ?');
         $sth->execute(100);
         my ($result) = $sth->fetchrow_array();
-        cmp_ok($result, '==', 10, '... got the right value');        
+        is($result, 10, '... got the right value');        
     };
     ok(!$@, '... first state worked as planned');
     
@@ -83,14 +83,14 @@ BEGIN {
         my $sth = $dbh->prepare('SELECT bar FROM foo WHERE baz = 125');
         $sth->execute();
         my ($result) = $sth->fetchrow_array();
-        cmp_ok($result, '==', 15, '... got the right value');
+        is($result, 15, '... got the right value');
     };
     ok(!$@, '... second state worked as planned');
         
     eval {
         my $sth = $dbh->prepare('DELETE FROM bar WHERE baz = ?');
         $sth->execute(100);
-        cmp_ok($sth->rows(), '==', 2, '... got the right number of affected rows');
+        is($sth->rows(), 2, '... got the right number of affected rows');
     };
     ok(!$@, '... third state worked as planned');
 
@@ -182,10 +182,10 @@ BEGIN {
         my $sth = $dbh->prepare('SELECT foo FROM bar WHERE baz = ?'); 
         $sth->execute(100); 
         my ($result) = $sth->fetchrow_array(); 
-        cmp_ok($result, '==', 10, '... first execute got the right  value'); 
+        is($result, 10, '... first execute got the right  value'); 
         $sth->execute(125); 
         ($result) = $sth->fetchrow_array(); 
-        cmp_ok($result, '==', 15, '... second execute got the right value'); 
+        is($result, 15, '... second execute got the right value'); 
     }; 
     ok(!$@, '... everything worked as planned'); 
 
