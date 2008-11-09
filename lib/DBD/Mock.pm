@@ -287,7 +287,7 @@ sub prepare {
         $sth->STORE(NUM_OF_FIELDS  => scalar @{$fields});
     }
     else {
-        $sth->trace_msg('No return data set in DBH', 1);
+        $sth->trace_msg("No return data set in DBH\n", 1);
     }
 
      # do not allow a statement handle to be created if there is no
