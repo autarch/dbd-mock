@@ -91,7 +91,8 @@ use constant NULL_RESULTSET => [[]];
 ########################################
 # DRIVER
 
-package DBD::Mock::dr;
+package
+    DBD::Mock::dr;
 
 use strict;
 use warnings;
@@ -189,7 +190,8 @@ sub DESTROY { undef }
 ########################################
 # DATABASE
 
-package DBD::Mock::db;
+package
+    DBD::Mock::db;
 
 use strict;
 use warnings;
@@ -554,7 +556,8 @@ sub disconnect {
 ########################################
 # STATEMENT
 
-package DBD::Mock::st;
+package
+    DBD::Mock::st;
 
 use strict;
 use warnings;
@@ -912,7 +915,8 @@ sub DESTROY { undef }
 # Database Pooling
 # (Apache::DBI emulation)
 
-package DBD::Mock::Pool;
+package
+    DBD::Mock::Pool;
 
 use strict;
 use warnings;
@@ -930,7 +934,8 @@ sub connect {
     return $connection = bless $drh->connect(@_), 'DBD::Mock::Pool::db';
 }
 
-package DBD::Mock::Pool::db;
+package
+    DBD::Mock::Pool::db;
 
 use strict;
 use warnings;
@@ -942,7 +947,8 @@ sub disconnect { 1 }
 ########################################
 # TRACKER
 
-package DBD::Mock::StatementTrack;
+package
+    DBD::Mock::StatementTrack;
 
 use strict;
 use warnings;
@@ -1125,7 +1131,8 @@ sub bound_params {
     return $self->{bound_params};
 }
 
-package DBD::Mock::StatementTrack::Iterator;
+package
+    DBD::Mock::StatementTrack::Iterator;
 
 use strict;
 use warnings;
@@ -1146,7 +1153,8 @@ sub next {
 
 sub reset { (shift)->{pointer} = 0 }
 
-package DBD::Mock::Session;
+package
+    DBD::Mock::Session;
 
 use strict;
 use warnings;
