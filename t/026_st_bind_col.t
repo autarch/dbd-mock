@@ -3,7 +3,7 @@ use 5.006;
 use strict;
 use warnings;
 
-use Test::More tests => 11;
+use Test::More tests => 12;
 
 BEGIN {
     use_ok('DBD::Mock');
@@ -44,6 +44,11 @@ $sth->execute();
     is( $hash{id}, 27, 'bind_columns with hash, id == 1' );
     is( $hash{type}, 'african', 'bind_columns with hash, type == "african"' );
     is( $hash{inventory_id}, 2, 'bind_columns with hash, inventory_id == 2' );
+}
+
+{
+    ok( ! $sth->fetchrow_arrayref(),
+        'fetchrow_arrayref returns false after data is exhausted, even with bound columns' );
 }
 
 {

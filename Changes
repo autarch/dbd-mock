@@ -1,5 +1,12 @@
 Revision history for Perl extension DBD::Mock.
 
+1.39 November 9, 2008
+    - If a statement handle had bound columns, then the fetch() and
+      fetchrow_arrayref() methods never returned false. After they
+      exhausted their data, they kept returning empty array
+      references.
+    - Hid all packaged but DBD::Mock from PAUSE.
+
 1.38 November 8, 2008
     - Bumped minimum Perl to 5.8.1, since that's what DBI requires.
     - Fixed incorrect use of no_plan in t/025_mock_last_insert_id.t.

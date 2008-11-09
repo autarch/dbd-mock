@@ -20,7 +20,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.38';
+our $VERSION = '1.39';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes
@@ -673,7 +673,8 @@ sub fetch {
 
     my $tracker = $sth->FETCH( 'mock_my_history' );
 
-    my $record = $tracker->next_record;
+    my $record = $tracker->next_record
+        or return;
 
     if ( my @cols = $tracker->bind_cols() ) {
         for my $i ( grep { ref $cols[$_] } 0..$#cols ) {
