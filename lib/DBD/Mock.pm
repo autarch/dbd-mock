@@ -1284,7 +1284,7 @@ DBD::Mock - Mock database driver for testing
  # Now query the statement handle as to what has been done with it
  my $mock_params = $sth->{mock_params};
  print "Used statement: ", $sth->{mock_statement}, "\n",
-       "Bound parameters: ", join( ', ', @{ $params } ), "\n";
+       "Bound parameters: ", join( ', ', @{ $mock_params } ), "\n";
 
 =head1 DESCRIPTION
 
