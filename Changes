@@ -4,7 +4,7 @@ Revision history for Perl extension DBD::Mock.
     - If a statement handle had bound columns, then the fetch() and
       fetchrow_arrayref() methods never returned false. After they
       exhausted their data, they kept returning empty array
-      references.
+      references. Fixes RT #37054.
     - Hid all packaged but DBD::Mock from PAUSE.
 
 1.38 November 8, 2008
