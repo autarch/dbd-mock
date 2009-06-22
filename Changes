@@ -5,7 +5,7 @@ Revision history for Perl extension DBD::Mock.
       fetchrow_arrayref() methods never returned false. After they
       exhausted their data, they kept returning empty array
       references. Fixes RT #37054.
-    - Hid all packaged but DBD::Mock from PAUSE.
+    - Hid all packages but DBD::Mock from PAUSE.
 
 1.38 November 8, 2008
     - Bumped minimum Perl to 5.8.1, since that's what DBI requires.
