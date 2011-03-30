@@ -1246,6 +1246,9 @@ sub verify_statement {
 sub verify_bound_params {
     my ($self, $dbh, $params) = @_;
 
+    ($self->has_states_left)
+        || die "Session states exhausted, only '" . scalar(@{$self->{states}}) . "' in DBD::Mock::Session (" . $self->{name} . ")";
+
     my $current_state = $self->current_state;
     if (exists ${$current_state}{bound_params}) {
         my $expected = $current_state->{bound_params};
