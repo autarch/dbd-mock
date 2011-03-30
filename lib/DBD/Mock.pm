@@ -322,7 +322,8 @@ sub prepare {
         if ($dbh->FETCH('AutoCommit')) {
             $dbh->STORE('AutoCommit', 0);
             $begin_work_commit = 1;
-            my $sth = $dbh->prepare( 'BEGIN WORK' );
+            my $sth = $dbh->prepare( 'BEGIN WORK' )
+                or return;
             my $rc = $sth->execute();
             $sth->finish();
             return $rc;
@@ -338,7 +339,8 @@ sub prepare {
             return $dbh->set_err(1, "commit ineffective with AutoCommit" );
         }
 
-        my $sth = $dbh->prepare( 'COMMIT' );
+        my $sth = $dbh->prepare( 'COMMIT' )
+            or return;
         my $rc = $sth->execute();
         $sth->finish();
 
@@ -356,7 +358,8 @@ sub prepare {
             return $dbh->set_err(1, "rollback ineffective with AutoCommit" );
         }
 
-        my $sth = $dbh->prepare( 'ROLLBACK' );
+        my $sth = $dbh->prepare( 'ROLLBACK' )
+            or return;
         my $rc = $sth->execute();
         $sth->finish();
 
