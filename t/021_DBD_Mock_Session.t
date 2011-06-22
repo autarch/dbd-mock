@@ -96,6 +96,7 @@ use DBI;
     eval {
         Login::Test::login($dbh, 'user', '****')
     };
+
     ok($@, '... got the exception');
     like($@, qr/Session Error\: Session states exhausted/, '... got the exception we expected');
     

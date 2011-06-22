@@ -20,7 +20,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.39';
+our $VERSION = '1.40';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes
@@ -245,18 +245,6 @@ sub prepare {
         return;
     }
 
-    if (my $session = $dbh->FETCH('mock_session')) {
-        eval {
-            $session->verify_statement($dbh, $statement);
-        };
-        if ($@) {
-            my $session_error = $@;
-            chomp $session_error;
-            $dbh->DBI::set_err(1, "Session Error: ${session_error}. Statement: ${statement}");
-            return;
-        }
-    }
-
     my $sth = DBI::_new_sth($dbh, { Statement => $statement });
 
     $sth->trace_msg("Preparing statement '${statement}'\n", 1);
@@ -437,7 +425,9 @@ sub FETCH {
 
 sub STORE {
     my ( $dbh, $attrib, $value ) = @_;
-    $dbh->trace_msg( "Storing DB attribute '$attrib' with '" . (defined($value) ? $value : 'undef') . "'\n" );
+
+    my $printed_value = $value || 'undef';
+    $dbh->trace_msg( "Storing DB attribute '$attrib' with '$printed_value'\n" );
 
     if ($attrib eq 'AutoCommit') {
         # These are magic DBI values that say we can handle AutoCommit
@@ -526,11 +516,11 @@ sub STORE {
         return $dbh->{$attrib} = $value;
     }
     elsif ($attrib =~ /^(private_|dbi_|dbd_|[A-Z])/ ) {
-        $dbh->trace_msg("... storing non-driver attribute ($attrib) with value ($value) that DBI handles\n");
+        $dbh->trace_msg("... storing non-driver attribute ($attrib) with value ($printed_value) that DBI handles\n");
         return $dbh->SUPER::STORE($attrib, $value);
     }
   else {
-      $dbh->trace_msg("... storing non-driver attribute ($attrib) with value ($value) that DBI won't handle\n");
+      $dbh->trace_msg("... storing non-driver attribute ($attrib) with value ($printed_value) that DBI won't handle\n");
       return $dbh->{$attrib} = $value;
   }
 }
@@ -619,6 +609,7 @@ sub execute {
 
     if (my $session = $dbh->{mock_session}) {
         eval {
+            $session->verify_statement($dbh, $sth->{Statement});
             $session->verify_bound_params($dbh, $tracker->bound_params());
             my $idx = $session->{state_index} - 1;
             my @results = @{$session->{states}->[$idx]->{results}};
@@ -2065,7 +2056,7 @@ Perl Code Kata: Testing Databases - L<http://www.perl.com/pub/a/2005/02/10/datab
 
 We have created a B<DBD::Mock> google group for discussion/questions about this module.
 
-L<http://groups-beta.google.com/group/DBDMock>
+L<http://groups.google.com/group/DBDMock>
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -2099,6 +2090,8 @@ Copyright (C) 2004-2007 Stevan Little E<lt>stevan@iinteractive.comE<gt>
 
 Copyright (C) 2007 Rob Kinyon E<lt>rob.kinyon@gmail.comE<gt>
 
+Copyright (C) 2011 Mariano Wahlmann E<lt>dichoso  _at_ gmail.comE<gt>
+
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
@@ -2109,5 +2102,7 @@ Chris Winters E<lt>chris@cwinters.comE<gt>
 Stevan Little E<lt>stevan@iinteractive.comE<gt>
 
 Rob Kinyon E<lt>rob.kinyon@gmail.comE<gt>
+
+Mariano Wahlmann E<lt>dichoso _at_ gmail.com <gt>
 
 =cut
