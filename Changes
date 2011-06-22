@@ -1,5 +1,8 @@
 Revision history for Perl extension DBD::Mock.
 
+1.41 June 22, 2011
+    - Changed incorrect verion number
+
 1.40 June 19, 2011
     - Fixed bug rt44591 second preapre giving an error
     - Fixed bug rt57981 warnings during clone

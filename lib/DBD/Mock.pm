@@ -20,7 +20,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.40';
+our $VERSION = '1.41';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes
