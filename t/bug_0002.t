@@ -105,10 +105,10 @@ while(@cases) {
     # bug meant that the message got clobbered by "Can't call method
     # 'execute' on an undefined value".)
     throws_ok {
-        # This statement is always the same.
+        # This stlibatement is always the same.
         ok $dbh->begin_work,
             "$case_name: start transaction";
-
+        print STDERR "ERROR: $DBI::errstr\n";
         my $state = $states->[2];
         my $sth = $dbh->prepare($state->{statement});
         ok $sth, 

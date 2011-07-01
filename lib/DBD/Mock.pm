@@ -20,7 +20,7 @@ use warnings;
 
 require DBI;
 
-our $VERSION = '1.41';
+our $VERSION = '1.42';
 
 our $drh    = undef;    # will hold driver handle
 our $err    = 0;        # will hold any error codes
@@ -612,10 +612,13 @@ sub execute {
 
     if (my $session = $dbh->{mock_session}) {
         eval {
+            my $state = $session->current_state;
             $session->verify_statement($dbh, $sth->{Statement});
             $session->verify_bound_params($dbh, $tracker->bound_params());
-            my $idx = $session->{state_index} - 1;
-            my @results = @{$session->{states}->[$idx]->{results}};
+
+            # Load a copy of the results to return (minus the field
+            # names) into the tracker
+            my @results = @{$state->{results}};
             shift @results;
             $tracker->{return_data} = \@results;
         };
@@ -623,6 +626,7 @@ sub execute {
             my $session_error = $@;
             chomp $session_error;
             $dbh->DBI::set_err(1, "Session Error: ${session_error}");
+            print "RETURNING HERE $@\n";
             return;
         }
     }
@@ -634,7 +638,8 @@ sub execute {
     # handle INSERT statements and the mock_last_insert_ids
     # We should only increment these things after the last successful INSERT.
     # -RobK, 2007-10-12
-#use Data::Dumper;warn Dumper $dbh->{mock_last_insert_ids};
+    #use Data::Dumper;warn Dumper $dbh->{mock_last_insert_ids};
+
     if ($dbh->{Statement} =~ /^\s*?insert\s+into\s+(\S+)/i) {
         if ( $dbh->{mock_last_insert_ids} && exists $dbh->{mock_last_insert_ids}{$1} ) {
             $dbh->{mock_last_insert_id} = $dbh->{mock_last_insert_ids}{$1}++;
@@ -1184,6 +1189,12 @@ sub name  { (shift)->{name} }
 sub reset { (shift)->{state_index} = 0 }
 sub num_states { scalar( @{ (shift)->{states} } ) }
 
+sub current_state {
+    my $self = shift;
+    my $idx = $self->{state_index};
+    return $self->{states}[$idx];
+}
+
 sub has_states_left {
     my $self = shift;
     return $self->{state_index} < scalar(@{$self->{states}});
@@ -1195,7 +1206,7 @@ sub verify_statement {
     ($self->has_states_left)
         || die "Session states exhausted, only '" . scalar(@{$self->{states}}) . "' in DBD::Mock::Session (" . $self->{name} . ")";
 
-    my $current_state = $self->{states}->[$self->{state_index}];
+    my $current_state = $self->current_state;
     # make sure our state is good
     (exists ${$current_state}{statement} && exists ${$current_state}{results})
         || die "Bad state '" . $self->{state_index} .  "' in DBD::Mock::Session (" . $self->{name} . ")";
@@ -1227,7 +1238,11 @@ sub verify_statement {
 
 sub verify_bound_params {
     my ($self, $dbh, $params) = @_;
-    my $current_state = $self->{states}->[$self->{state_index}];
+
+     ($self->has_states_left)
+            || die "Session states exhausted, only '" . scalar(@{$self->{states}}) . "' in DBD::Mock::Session (" . $self->{name} . ")";
+
+    my $current_state = $self->current_state;
     if (exists ${$current_state}{bound_params}) {
         my $expected = $current_state->{bound_params};
         (scalar(@{$expected}) == scalar(@{$params}))

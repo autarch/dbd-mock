@@ -1,5 +1,8 @@
 Revision history for Perl extension DBD::Mock.
 
+1.42
+    - Fixed bug rt66815 DBD::Mock::Session error clobbered
+
 1.41 June 22, 2011
     - Changed incorrect verion number
 
