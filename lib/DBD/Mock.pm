@@ -102,7 +102,7 @@ $DBD::Mock::dr::imp_data_size = 0;
 sub connect {
     my ($drh, $dbname, $user, $auth, $attributes) = @_;
     if ($drh->{'mock_connect_fail'} == 1) {
-        $drh->DBI::set_err(1, "Could not connect to mock database");
+        $drh->set_err(1, "Could not connect to mock database");
         return;
     }
     $attributes ||= {};
@@ -159,7 +159,7 @@ sub STORE {
         }
         elsif ($attr eq 'mock_data_sources') {
             if (ref($value) ne 'ARRAY') {
-                $drh->DBI::set_err(1, "You must pass an array ref of data sources");
+                $drh->set_err(1, "You must pass an array ref of data sources");
                 return;
             }
             return $drh->{'mock_data_sources'} = $value;
@@ -195,8 +195,19 @@ package
 
 use strict;
 use warnings;
+use Carp qw(croak);
 
 $DBD::Mock::db::imp_data_size = 0;
+
+
+sub set_err {
+    my ( $self, $err, $errStr ) = @_;
+    $self->SUPER::set_err($err,$errStr);
+    if ( $self->{RaiseError} ) {
+        croak $errStr;
+    }
+}
+
 
 sub ping {
      my ( $dbh ) = @_;
@@ -218,11 +229,11 @@ sub prepare {
     my($dbh, $statement) = @_;
 
     unless ($dbh->{mock_can_connect}) {
-        $dbh->DBI::set_err(1, "No connection present");
+        $dbh->set_err(1, "No connection present");
         return;
     }
     unless ($dbh->{mock_can_prepare}) {
-        $dbh->DBI::set_err(1, "Cannot prepare");
+        $dbh->set_err(1, "Cannot prepare");
         return;
     }
     $dbh->{mock_can_prepare}++ if $dbh->{mock_can_prepare} < 0;
@@ -241,7 +252,7 @@ sub prepare {
     if ($@) {
         my $parser_error = $@;
         chomp $parser_error;
-        $dbh->DBI::set_err(1, "Failed to parse statement. Error: ${parser_error}. Statement: ${statement}");
+        $dbh->set_err(1, "Failed to parse statement. Error: ${parser_error}. Statement: ${statement}");
         return;
     }
 
@@ -282,7 +293,7 @@ sub prepare {
      # connection present.
 
     unless ($dbh->FETCH('Active')) {
-        $dbh->DBI::set_err(1, "No connection present");
+        $dbh->set_err(1, "No connection present");
         return;
     }
 
@@ -393,6 +404,10 @@ sub FETCH {
     my ( $dbh, $attrib, $value ) = @_;
     $dbh->trace_msg( "Fetching DB attrib '$attrib'\n" );
 
+    if ( $attrib eq 'RaiseError' ) {
+        return $dbh->{RaiseError};
+    }
+
     if ($attrib eq 'Active') {
         return $dbh->{mock_can_connect};
     }
@@ -438,6 +453,11 @@ sub STORE {
         $value = ($value) ? -901 : -900;
     }
 
+    if ( $attrib eq 'RaiseError' ) {
+        $dbh->{RaiseError} = $value;
+        return $value;
+    }
+
     if ( $attrib eq 'mock_clear_history' ) {
         if ( $value ) {
             $dbh->{mock_statement_history} = [];
@@ -458,7 +478,7 @@ sub STORE {
         unless ($is_valid_parser) {
             my $error = "Parser must be a code reference or object with 'parse()' " .
                         "method (Given type: '$parser_type')";
-            $dbh->DBI::set_err(1, $error);
+            $dbh->set_err(1, $error);
             return;
         }
         push @{$dbh->{mock_parser}}, $value;
@@ -576,10 +596,10 @@ sub bind_param_inout {
     my ($sth, $param_num, $val, $max_len) = @_;
     # check that $val is a scalar ref
     (UNIVERSAL::isa($val, 'SCALAR'))
-        || $sth->{Database}->DBI::set_err(1, "need a scalar ref to bind_param_inout, not $val");
+        || $sth->{Database}->set_err(1, "need a scalar ref to bind_param_inout, not $val");
     # check for positive $max_len
     ($max_len > 0)
-        || $sth->{Database}->DBI::set_err(1, "need to specify a maximum length to bind_param_inout");
+        || $sth->{Database}->set_err(1, "need to specify a maximum length to bind_param_inout");
     my $tracker = $sth->FETCH( 'mock_my_history' );
     $tracker->bound_param( $param_num, $val );
     return 1;
@@ -590,11 +610,11 @@ sub execute {
     my $dbh = $sth->{Database};
 
     unless ($dbh->{mock_can_connect}) {
-        $dbh->DBI::set_err(1, "No connection present");
+        $dbh->set_err(1, "No connection present");
         return 0;
     }
     unless ($dbh->{mock_can_execute}) {
-        $dbh->DBI::set_err(1, "Cannot execute");
+        $dbh->set_err(1, "Cannot execute");
         return 0;
     }
     $dbh->{mock_can_execute}++ if $dbh->{mock_can_execute} < 0;
@@ -602,7 +622,7 @@ sub execute {
     my $tracker = $sth->FETCH( 'mock_my_history' );
 
     if ($tracker->has_failure()) {
-        $dbh->DBI::set_err($tracker->get_failure());
+        $dbh->set_err($tracker->get_failure());
         return 0;
     }
 
@@ -625,8 +645,7 @@ sub execute {
         if ($@) {
             my $session_error = $@;
             chomp $session_error;
-            $dbh->DBI::set_err(1, "Session Error: ${session_error}");
-            print "RETURNING HERE $@\n";
+            $dbh->set_err(1, "Session Error: ${session_error}");
             return;
         }
     }
@@ -661,11 +680,11 @@ sub fetch {
     my ($sth) = @_;
     my $dbh = $sth->{Database};
     unless ($dbh->{mock_can_connect}) {
-        $dbh->DBI::set_err(1, "No connection present");
+        $dbh->set_err(1, "No connection present");
         return;
     }
     unless ($dbh->{mock_can_fetch}) {
-        $dbh->DBI::set_err(1, "Cannot fetch");
+        $dbh->set_err(1, "Cannot fetch");
         return;
     }
     $dbh->{mock_can_fetch}++ if $dbh->{mock_can_fetch} < 0;
@@ -702,11 +721,11 @@ sub fetchrow_hashref {
     # handle any errors since we are grabbing
     # from the tracker directly
     unless ($dbh->{mock_can_connect}) {
-        $dbh->DBI::set_err(1, "No connection present");
+        $dbh->set_err(1, "No connection present");
         return;
     }
     unless ($dbh->{mock_can_fetch}) {
-        $dbh->DBI::set_err(1, "Cannot fetch");
+        $dbh->set_err(1, "Cannot fetch");
         return;
     }
     $dbh->{mock_can_fetch}++ if $dbh->{mock_can_fetch} < 0;
@@ -738,11 +757,11 @@ sub fetchall_hashref {
     # handle any errors since we are grabbing
     # from the tracker directly
     unless ($dbh->{mock_can_connect}) {
-        $dbh->DBI::set_err(1, "No connection present");
+        $dbh->set_err(1, "No connection present");
         return;
     }
     unless ($dbh->{mock_can_fetch}) {
-        $dbh->DBI::set_err(1, "Cannot fetch");
+        $dbh->set_err(1, "Cannot fetch");
         return;
     }
     $dbh->{mock_can_fetch}++ if $dbh->{mock_can_fetch} < 0;
@@ -768,7 +787,7 @@ sub fetchall_hashref {
             }
         }
         unless ($found) {
-            $dbh->DBI::set_err(1, "Could not find key field '$keyfield'");
+            $dbh->set_err(1, "Could not find key field '$keyfield'");
             return;
         }
     }

@@ -108,7 +108,7 @@ while(@cases) {
         # This stlibatement is always the same.
         ok $dbh->begin_work,
             "$case_name: start transaction";
-        print STDERR "ERROR: $DBI::errstr\n";
+
         my $state = $states->[2];
         my $sth = $dbh->prepare($state->{statement});
         ok $sth, 
