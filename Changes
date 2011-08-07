@@ -2,6 +2,9 @@ Revision history for Perl extension DBD::Mock.
 
 1.42
     - Fixed bug rt66815 DBD::Mock::Session error clobbered
+    - Fixed bug rt69460 Info on META.yml is outdated
+    - Fixed bug rt69055 Spelling mistakes in POD
+    - RaiseError now works
 
 1.41 June 22, 2011
     - Changed incorrect verion number

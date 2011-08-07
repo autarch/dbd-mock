@@ -1940,7 +1940,7 @@ Calling C<next> will return the next C<DBD::Mock::StatementTrack> object in the 
 
 B<reset>
 
-This will reset the internal pointer to the begining of the statement history.
+This will reset the internal pointer to the beginning of the statement history.
 
 =back
 
