@@ -7,21 +7,19 @@ use warnings;
 
 my $build = Module::Build->new(
     module_name => 'DBD::Mock',
-    license => 'perl',
-    requires => {
+    license     => 'perl',
+    requires    => {
         'perl' => '5.6.0',
-        'DBI' => 1.30,
+        'DBI'  => 1.30,
     },
-    optional => {
-    },
+    optional       => {},
     build_requires => {
-        'Test::More' => '0.47',
+        'Test::More'      => '0.47',
+        'Test::Exception' => '0.31',
     },
-    create_makefile_pl => 'traditional',
+    create_makefile_pl   => 'traditional',
     recursive_test_files => 1,
-    add_to_cleanup => [
-        '*.bak',
-    ],
+    add_to_cleanup       => [ '*.bak', ],
 );
 
 $build->create_build_script;

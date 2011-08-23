@@ -1,5 +1,8 @@
 Revision history for Perl extension DBD::Mock.
 
+1.43
+    - Segregated into different packages
+
 1.42
     - Fixed bug rt66815 DBD::Mock::Session error clobbered
     - Fixed bug rt69460 Info on META.yml is outdated
