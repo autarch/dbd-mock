@@ -77,7 +77,7 @@ sub execute {
         if ($@) {
             my $session_error = $@;
             chomp $session_error;
-            $dbh->set_err( 1, "Session Error: ${session_error}" );
+            $sth->set_err( 1, "Session Error: ${session_error}" );
             return;
         }
     }

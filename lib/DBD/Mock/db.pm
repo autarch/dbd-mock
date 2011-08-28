@@ -2,17 +2,8 @@ package DBD::Mock::db;
 
 use strict;
 use warnings;
-use Carp qw(croak);
 
 our $imp_data_size = 0;
-
-sub set_err {
-    my ( $self, $err, $errStr ) = @_;
-    $self->SUPER::set_err( $err, $errStr );
-    if ( $self->{RaiseError} ) {
-        croak $errStr;
-    }
-}
 
 sub ping {
     my ($dbh) = @_;
@@ -131,8 +122,9 @@ sub prepare {
             $dbh->STORE( 'AutoCommit', 0 );
             $begin_work_commit = 1;
             my $sth = $dbh->prepare('BEGIN WORK')
-              or return;
-            my $rc = $sth->execute();
+              or return $dbh->set_err( 1, $DBI::errstr );
+            my $rc = $sth->execute()
+              or return $dbh->set_err( 1, $DBI::errstr );
             $sth->finish();
             return $rc;
         }
@@ -149,8 +141,9 @@ sub prepare {
         }
 
         my $sth = $dbh->prepare('COMMIT')
-          or return;
-        my $rc = $sth->execute();
+          or return $dbh->set_err( 1, $DBI::errstr );
+        my $rc = $sth->execute()
+          or return $dbh->set_err( 1, $DBI::errstr );
         $sth->finish();
 
         if ($begin_work_commit) {
@@ -168,8 +161,9 @@ sub prepare {
         }
 
         my $sth = $dbh->prepare('ROLLBACK')
-          or return;
-        my $rc = $sth->execute();
+          or return $dbh->set_err( 1, $DBI::errstr );
+        my $rc = $sth->execute()
+          or return $dbh->set_err( 1, $DBI::errstr );
         $sth->finish();
 
         if ($begin_work_commit) {
@@ -214,10 +208,6 @@ sub selectcol_arrayref {
 sub FETCH {
     my ( $dbh, $attrib, $value ) = @_;
     $dbh->trace_msg("Fetching DB attrib '$attrib'\n");
-
-    if ( $attrib eq 'RaiseError' ) {
-        return $dbh->{RaiseError};
-    }
 
     if ( $attrib eq 'Active' ) {
         return $dbh->{mock_can_connect};
@@ -268,11 +258,6 @@ sub STORE {
         # These are magic DBI values that say we can handle AutoCommit
         # internally as well
         $value = ($value) ? -901 : -900;
-    }
-
-    if ( $attrib eq 'RaiseError' ) {
-        $dbh->{RaiseError} = $value;
-        return $value;
     }
 
     if ( $attrib eq 'mock_clear_history' ) {
