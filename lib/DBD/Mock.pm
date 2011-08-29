@@ -606,6 +606,12 @@ The same result will occur if you pass the parameters via C<execute()> instead:
   my $sth = $dbh->prepare( 'SELECT * FROM foo WHERE id = ? AND is_active = ?' );
   $sth->execute( 7783, 'yes' );
 
+The same using named parameters
+
+  my $sth = $dbh->prepare( 'SELECT * FROM foo WHERE id = :id AND is_active = :active' );
+  $sth->bind_param( ':id' => 7783 );
+  $sth->bind_param( ':active' => 'yes' );
+
 =item B<mock_records>
 
 An arrayref of arrayrefs representing the records the mock statement was stocked with.
@@ -883,17 +889,6 @@ I would like to have the DBD::Mock::StatementTrack object handle more of the moc
 I would also like to add the ability to bind a subroutine (or possibly an object) to the result set, so that the results can be somewhat more dynamic and allow for a more realistic interaction.
 
 =back
-
-=head1 CODE COVERAGE
-
-We use L<Devel::Cover> to test the code coverage of my tests, below is the L<Devel::Cover> report on this module test suite.
-
-  ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  File                           stmt   bran   cond    sub    pod   time  total
-  ---------------------------- ------ ------ ------ ------ ------ ------ ------
-  blib/lib/DBD/Mock.pm           92.0   86.6   77.9   95.3    0.0  100.0   89.5
-  Total                          92.0   86.6   77.9   95.3    0.0  100.0   89.5
-  ---------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO
 

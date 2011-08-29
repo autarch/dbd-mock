@@ -2,6 +2,9 @@ Revision history for Perl extension DBD::Mock.
 
 1.43
     - Segregated into different packages
+    - Removed code coverage from POD
+    - Fixed bug rt49537 Basic support for named parameters
+    - Fixed bug rt70421 Build.PL now contains Test::Exception
 
 1.42
     - Fixed bug rt66815 DBD::Mock::Session error clobbered
