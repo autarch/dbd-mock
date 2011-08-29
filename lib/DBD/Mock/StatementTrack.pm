@@ -62,6 +62,12 @@ sub bind_col {
 
 sub bound_param {
     my ( $self, $param_num, $value ) = @_;
+
+    # Basic support for named parameters
+    if ( $param_num !~ /^\d+/ ) {
+        $param_num = $self->num_params + 1;
+    }
+
     $self->{bound_params}->[ $param_num - 1 ] = $value;
     return $self->bound_params;
 }
