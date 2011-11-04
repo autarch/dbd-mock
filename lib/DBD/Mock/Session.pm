@@ -130,7 +130,7 @@ sub verify_bound_params {
               . " expected: @{$expected}";
         }
 
-        for ( 0 .. scalar @{$params} ) {
+        for ( 0 .. scalar @{$params} - 1 ) {
             $self->_verify_bound_param( $params->[$_], $expected->[$_], $_ );
         }
 
