@@ -43,14 +43,11 @@ sub _verify_state {
 sub _verify_states {
     my ( $class, $name, @states ) = @_;
 
-    my $index = 0;
-
     die "You must specify at least one session state"
       if scalar @states == 0;
 
     for ( 0 .. scalar @states - 1 ) {
         $class->_verify_state( $states[$_], $_, $name );
-        $index++;
     }
 }
 
@@ -187,7 +184,6 @@ sub _verify_bound_param {
           . "     got: $got\n"
           . " expected: $expected";
     }
-
 }
 
 1;
