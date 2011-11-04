@@ -7,31 +7,47 @@ my $INSTANCE_COUNT = 1;
 
 sub new {
     my $class = shift;
-    (@_) || die "You must specify at least one session state";
-    my $session_name;
-    if ( ref( $_[0] ) ) {
-        $session_name = 'Session ' . $INSTANCE_COUNT;
-    }
-    else {
-        $session_name = shift;
-    }
-    my @session_states = @_;
-    (@session_states)
-      || die "You must specify at least one session state";
-    ( ref($_) eq 'HASH' )
-      || die "You must specify session states as HASH refs"
-      foreach @session_states;
+    my $name = ref( $_[0] ) ? "Session $INSTANCE_COUNT" : shift;
+
+    $class->_verify_states( $name, @_ );
+
     $INSTANCE_COUNT++;
-    return bless {
-        name        => $session_name,
-        states      => \@session_states,
+    bless {
+        name        => $name,
+        states      => \@_,
         state_index => 0
-    } => $class;
+    }, $class;
 }
 
 sub name       { (shift)->{name} }
 sub reset      { (shift)->{state_index} = 0 }
 sub num_states { scalar( @{ (shift)->{states} } ) }
+
+sub _verify_states {
+    my ( $class, $name, @states ) = @_;
+
+    my $index = 0;
+
+    die "You must specify at least one session state"
+      if not scalar(@states);
+
+    foreach (@states) {
+        die "You must specify session states as HASH refs"
+          if ref($_) ne 'HASH';
+
+        die "Bad state '$index' in DBD::Mock::Session ($name)"
+          if not exists $_->{statement}
+              or not exists $_->{results};
+
+        die
+"Bad 'statement' value '$_->{statement}' in DBD::Mock::Session ($name)"
+          if ref( $_->{statement} ) ne ''
+              and ref( $_->{statement} ) ne 'CODE'
+              and ref( $_->{statement} ) ne 'Regexp';
+
+    }
+
+}
 
 sub current_state {
     my $self = shift;
@@ -44,61 +60,68 @@ sub has_states_left {
     return $self->{state_index} < scalar( @{ $self->{states} } );
 }
 
+sub _remaining_states {
+    my $self        = shift;
+    my $start_index = $self->{state_index};
+    my $end_index   = $self->num_states - 1;
+    @{ $self->{states} }[ $start_index .. $end_index ];
+}
+
+sub _find_state_for {
+    my ( $self, $statement ) = @_;
+
+    foreach ( $self->_remaining_states ) {
+        my $stmt = $_->{statement};
+        my $ref  = ref($stmt);
+
+        return $_ if ( $ref eq 'Regexp' and $statement =~ /$stmt/ );
+        return $_ if ( $ref eq 'CODE' and $stmt->( $statement, $_ ) );
+        return $_ if ( not $ref and $stmt eq $statement );
+    }
+
+    die "Bad 'statement' value '$statement' in session ($self->{name})";
+}
+
 sub verify_statement {
-    my ( $self, $dbh, $statement ) = @_;
+    my ( $self, $statement ) = @_;
 
-    ( $self->has_states_left )
-      || die "Session states exhausted, only '"
+    die "Session states exhausted, only '"
       . scalar( @{ $self->{states} } )
-      . "' in DBD::Mock::Session ("
-      . $self->{name} . ")";
+      . "' in DBD::Mock::Session ($self->{name})"
+      unless $self->has_states_left;
 
-    my $current_state = $self->current_state;
+    my $stmt = $self->current_state->{statement};
+    my $ref  = ref($stmt);
 
-    # make sure our state is good
-    ( exists ${$current_state}{statement} && exists ${$current_state}{results} )
-      || die "Bad state '"
-      . $self->{state_index}
-      . "' in DBD::Mock::Session ("
-      . $self->{name} . ")";
-
-    # try the SQL
-    my $SQL = $current_state->{statement};
-    unless ( ref($SQL) ) {
-        ( $SQL eq $statement )
-          || die
-          "Statement does not match current state in DBD::Mock::Session ("
-          . $self->{name} . ")\n"
-          . "      got: $statement\n"
-          . " expected: $SQL";
-    }
-    elsif ( ref($SQL) eq 'Regexp' ) {
-        ( $statement =~ /$SQL/ )
-          || die
-"Statement does not match current state (with Regexp) in DBD::Mock::Session ("
-          . $self->{name} . ")\n"
-          . "      got: $statement\n"
-          . " expected: $SQL";
-    }
-    elsif ( ref($SQL) eq 'CODE' ) {
-        ( $SQL->( $statement, $current_state ) )
-          || die
-"Statement does not match current state (with CODE ref) in DBD::Mock::Session ("
-          . $self->{name} . ")";
-    }
-    else {
+    if ( $ref eq 'Regexp' and $statement !~ /$stmt/ ) {
         die
-"Bad 'statement' value '$SQL' in current state in DBD::Mock::Session ("
-          . $self->{name} . ")";
+"Statement does not match current state (with Regexp) in DBD::Mock::Session ($self->{name})\n"
+          . "      got: $statement\n"
+          . " expected: $stmt";
     }
 
-    # copy the result sets so that
-    # we can re-use the session
-    $dbh->STORE( 'mock_add_resultset' => [ @{ $current_state->{results} } ] );
+    if ( $ref eq 'CODE' and not $stmt->( $statement, $_ ) ) {
+        die
+"Statement does not match current state (with CODE ref) in DBD::Mock::Session ($self->{name})";
+
+    }
+
+    if ( not $ref and $stmt ne $statement ) {
+        die
+"Statement does not match current state in DBD::Mock::Session ($self->{name})\n"
+          . "      got: $statement\n"
+          . " expected: $stmt";
+    }
+
+}
+
+sub results_for {
+    my ( $self, $statment ) = @_;
+    $self->_find_state_for($statment)->{results};
 }
 
 sub verify_bound_params {
-    my ( $self, $dbh, $params ) = @_;
+    my ( $self, $params ) = @_;
 
     my $current_state = $self->current_state;
     if ( exists ${$current_state}{bound_params} ) {

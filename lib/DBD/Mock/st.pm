@@ -65,8 +65,8 @@ sub execute {
     if ( my $session = $dbh->{mock_session} ) {
         eval {
             my $state = $session->current_state;
-            $session->verify_statement( $dbh, $sth->{Statement} );
-            $session->verify_bound_params( $dbh, $tracker->bound_params() );
+            $session->verify_statement( $sth->{Statement});
+            $session->verify_bound_params( $tracker->bound_params() );
 
             # Load a copy of the results to return (minus the field
             # names) into the tracker

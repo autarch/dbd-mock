@@ -55,37 +55,59 @@ sub prepare {
     }
 
     my $sth = DBI::_new_sth( $dbh, { Statement => $statement } );
-
     $sth->trace_msg( "Preparing statement '${statement}'\n", 1 );
-
     my %track_params = ( statement => $statement );
 
-    # If we have available resultsets seed the tracker with one
+    if ( my $session = $dbh->{mock_session} ) {
+        eval {
+            my $rs = $session->results_for($statement);
+            if ( ref($rs) eq 'ARRAY' && scalar( @{$rs} ) > 0 ) {
+                my $fields = @{$rs}[0];
+                $track_params{return_data} = $rs;
+                $track_params{fields}      = $fields;
+                $sth->STORE( NAME          => $fields );
+                $sth->STORE( NUM_OF_FIELDS => scalar @{$fields} );
+            }
+            else {
+                $sth->trace_msg( "No return data set in DBH\n", 1 );
+            }
+        };
 
-    my $rs;
-    if ( my $all_rs = $dbh->{mock_rs} ) {
-        if ( my $by_name = $all_rs->{named}{$statement} ) {
+        if ($@) {
+            $dbh->DBI::set_err( 1, "Session Error: $@. Statement: $statement" );
+        }
 
-            # We want to copy this, because it is meant to be reusable
-            $rs = [ @{ $by_name->{results} } ];
-            if ( exists $by_name->{failure} ) {
-                $track_params{failure} = [ @{ $by_name->{failure} } ];
+    }
+
+    else {
+        # If we have available resultsets seed the tracker with one
+
+        my $rs;
+        if ( my $all_rs = $dbh->{mock_rs} ) {
+            if ( my $by_name = $all_rs->{named}{$statement} ) {
+
+                # We want to copy this, because it is meant to be reusable
+                $rs = [ @{ $by_name->{results} } ];
+                if ( exists $by_name->{failure} ) {
+                    $track_params{failure} = [ @{ $by_name->{failure} } ];
+                }
+            }
+            else {
+                $rs = shift @{ $all_rs->{ordered} };
             }
         }
-        else {
-            $rs = shift @{ $all_rs->{ordered} };
-        }
-    }
 
-    if ( ref($rs) eq 'ARRAY' && scalar( @{$rs} ) > 0 ) {
-        my $fields = shift @{$rs};
-        $track_params{return_data} = $rs;
-        $track_params{fields}      = $fields;
-        $sth->STORE( NAME          => $fields );
-        $sth->STORE( NUM_OF_FIELDS => scalar @{$fields} );
-    }
-    else {
-        $sth->trace_msg( "No return data set in DBH\n", 1 );
+        if ( ref($rs) eq 'ARRAY' && scalar( @{$rs} ) > 0 ) {
+            my $fields = shift @{$rs};
+            $track_params{return_data} = $rs;
+            $track_params{fields}      = $fields;
+            $sth->STORE( NAME          => $fields );
+            $sth->STORE( NUM_OF_FIELDS => scalar @{$fields} );
+        }
+        else {
+            $sth->trace_msg( "No return data set in DBH\n", 1 );
+        }
+
     }
 
     # do not allow a statement handle to be created if there is no

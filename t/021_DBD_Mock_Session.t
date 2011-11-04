@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 59;
+use Test::More tests => 55;
 
 BEGIN {
     use_ok('DBD::Mock');
@@ -51,7 +51,7 @@ use DBI;
 {
     my $dbh = DBI->connect('dbi:Mock:', '', '', { RaiseError => 1, PrintError => 0 });
 
-    my $session = DBD::Mock::Session->new({});
+    my $session = DBD::Mock::Session->new({ statement => '', results => []});
     isa_ok($session, 'DBD::Mock::Session');
     
     is($session->name(), 'Session 1', '... got the first default session name');
@@ -64,7 +64,7 @@ use DBI;
     $dbh->{mock_session} = undef;
     ok(!defined($dbh->{mock_session}), '... we no longer have a session in there');
 
-    my $session2 = DBD::Mock::Session->new({});
+    my $session2 = DBD::Mock::Session->new({ statement => '', results => []});
     isa_ok($session2, 'DBD::Mock::Session');
     
     is($session2->name(), 'Session 2', '... got the second default session name');
@@ -232,7 +232,7 @@ use DBI;
     like($@, qr/^You must specify session states as HASH refs/, '... got the error we expected');    
 
     eval {
-        DBD::Mock::Session->new('session', {}, [])
+        DBD::Mock::Session->new('session', { statement => '', results => [] }, [])
     };
     ok(defined($@), '... got an error, as expected');
     like($@, qr/^You must specify session states as HASH refs/, '... got the error we expected');    
@@ -240,10 +240,8 @@ use DBI;
 }
 
 {
-    my $session = DBD::Mock::Session->new('session' => {});
-    isa_ok($session, 'DBD::Mock::Session');
-    
     eval {
+        my $session = DBD::Mock::Session->new('session' => {});
         $session->verify_statement(DBI->connect('dbi:Mock:', '', ''), 'SELECT foo FROM bar');
     };
     ok(defined($@), '... got an error, as expected');
@@ -252,10 +250,8 @@ use DBI;
 }
 
 {
-    my $session = DBD::Mock::Session->new('session' => { statement => "" });
-    isa_ok($session, 'DBD::Mock::Session');
-    
     eval {
+        my $session = DBD::Mock::Session->new('session' => { statement => "" });
         $session->verify_statement(DBI->connect('dbi:Mock:', '', ''), 'SELECT foo FROM bar');
     };
     ok(defined($@), '... got an error, as expected');
@@ -264,11 +260,9 @@ use DBI;
 }
 
 {
-    my $session = DBD::Mock::Session->new('session' => { results => [] });
-    isa_ok($session, 'DBD::Mock::Session');
-    
     eval {
-        $session->verify_statement(DBI->connect('dbi:Mock:', '', ''), 'SELECT foo FROM bar');
+        my $session = DBD::Mock::Session->new('session' => { results => [] });
+       $session->verify_statement(DBI->connect('dbi:Mock:', '', ''), 'SELECT foo FROM bar');
     };
     ok(defined($@), '... got an error, as expected');
     like($@, qr/^Bad state \'0\' in DBD::Mock::Session \(session\)/, '... got the error we expected');
@@ -276,19 +270,15 @@ use DBI;
 }
 
 {
-    my $session = DBD::Mock::Session->new('session' => 
-        {
+    eval {
+        my $session = DBD::Mock::Session->new('session' => {
             statement => [],
             results   => []
-        }
-    );
-    isa_ok($session, 'DBD::Mock::Session');
-    
-    eval {
+        });
         $session->verify_statement(DBI->connect('dbi:Mock:', '', ''), 'SELECT foo FROM bar');
     };
     ok(defined($@), '... got an error, as expected');
-    like($@, qr/^Bad \'statement\' value \'ARRAY\(0x[a-f0-9]+\)\' in current state in DBD::Mock::Session \(session\)/, '... got the error we expected');
+    like($@, qr/^Bad \'statement\' value \'ARRAY\(0x[a-f0-9]+\)\' in DBD::Mock::Session \(session\)/, '... got the error we expected');
 
 }
 
