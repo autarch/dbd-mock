@@ -27,7 +27,8 @@ my $sql = 'INSERT INTO staff (first_name, last_name, dept) VALUES(?, ?, ?)';
     eval {
         $sth->execute_array( { ArrayTupleStatus => \my @tuple_status } );
     };
-    ok( ! $@, 'Called execute_array() ok' );
+    ok( ! $@, 'Called execute_array() ok' )
+        or diag $@;
 }
 
 done_testing;
