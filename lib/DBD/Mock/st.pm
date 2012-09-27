@@ -20,6 +20,10 @@ sub bind_param {
     return 1;
 }
 
+sub bind_param_array {
+    bind_param(@_);
+}
+
 sub bind_param_inout {
     my ( $sth, $param_num, $val, $max_len ) = @_;
 
