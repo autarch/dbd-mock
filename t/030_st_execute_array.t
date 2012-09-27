@@ -22,7 +22,7 @@ my $sql = 'INSERT INTO staff (first_name, last_name, dept) VALUES(?, ?, ?)';
 
     $sth->bind_param_array(1, [ 'John', 'Mary', 'Tim' ]);
     $sth->bind_param_array(2, [ 'Booth', 'Todd', 'Robinson' ]);
-    $sth->bind_param_array(3, "SALES"); # scalar will be reused for each row
+    # TODO: $sth->bind_param_array(3, "SALES"); # scalar will be reused for each row
 
     eval {
         $sth->execute_array( { ArrayTupleStatus => \my @tuple_status } );
