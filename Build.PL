@@ -20,6 +20,12 @@ my $build = Module::Build->new(
     create_makefile_pl   => 'traditional',
     recursive_test_files => 1,
     add_to_cleanup       => [ '*.bak', ],
+
+    meta_merge => {
+        resources => {
+            repository  => 'https://github.com/bluescreen10/dbd-mock',
+        },
+    },
 );
 
 $build->create_build_script;

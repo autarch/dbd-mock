@@ -1,5 +1,8 @@
 Revision history for Perl extension DBD::Mock.
 
+{{NEXT}}
+    - Add git-repo url to meta-data
+
 1.43
     - Segregated into different packages
     - Removed code coverage from POD
