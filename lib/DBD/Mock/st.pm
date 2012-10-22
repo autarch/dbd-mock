@@ -20,6 +20,10 @@ sub bind_param {
     return 1;
 }
 
+sub bind_param_array {
+    bind_param(@_);
+}
+
 sub bind_param_inout {
     my ( $sth, $param_num, $val, $max_len ) = @_;
 
@@ -35,6 +39,38 @@ sub bind_param_inout {
     my $tracker = $sth->FETCH('mock_my_history');
     $tracker->bound_param( $param_num, $val );
     return 1;
+}
+
+sub execute_array {
+    my ( $sth, $attr, @bind_values ) = @_;
+
+    # no bind values means we're relying on prior calls to bind_param_array()
+    # for our data
+    my $tracker = $sth->FETCH('mock_my_history');
+    # don't use a reference; there's some magic attached to it somewhere
+    # so make it a lovely, simple array as soon as possible
+    my @bound = @{ $tracker->bound_params() };
+    foreach my $p (@bound) {
+        my $result = $sth->execute( @$p );
+        # store the result from execute() if ArrayTupleStatus attribute is
+        # passed
+        push @{ $attr->{ArrayTupleStatus} }, $result
+            if (exists $attr->{ArrayTupleStatus});
+    }
+
+    # TODO: the docs say:
+    #   When called in scalar context the execute_array() method returns the
+    #   number of tuples executed, or undef if an error occurred. Like
+    #   execute(), a successful execute_array() always returns true regardless
+    #   of the number of tuples executed, even if it's zero. If there were any
+    #   errors the ArrayTupleStatus array can be used to discover which tuples
+    #   failed and with what errors.
+    #   When called in list context the execute_array() method returns two
+    #   scalars; $tuples is the same as calling execute_array() in scalar
+    #   context and $rows is the number of rows affected for each tuple, if
+    #   available or -1 if the driver cannot determine this. 
+    # We have glossed over this...
+    return scalar @bound;
 }
 
 sub execute {
