@@ -178,7 +178,7 @@ sub _verify_bound_param {
           . " expected: $expected";
     }
 
-    if ( $got ne $expected ) {
+    if ( not $ref and $got ne $expected ) {
         die "Bound param $index do not match "
           . "in current state in DBD::Mock::Session ($self->{name})\n"
           . "     got: $got\n"
