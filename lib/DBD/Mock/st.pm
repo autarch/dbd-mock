@@ -44,18 +44,37 @@ sub bind_param_inout {
 sub execute_array {
     my ( $sth, $attr, @bind_values ) = @_;
 
-    # no bind values means we're relying on prior calls to bind_param_array()
-    # for our data
+    if (@bind_values){
+        #i.e. if $sth->execute_array(\%attr,[1,2,3],[4,5,6]) is called, 
+        #that should translate to:
+        # $sth->bind_param_array(1,[1,2,3])
+        # $sth->bind_param_array(2,[4,5,6])
+        #etc
+        #TODO: pad shorter arrays out with nulls, as the docs for DBI suggest
+        for (my $i = 1;$i<=@bind_values;$i++){
+            if (! UNIVERSAL::isa( $bind_values[$i-1], 'ARRAY' ) ){
+                $sth->{Database}->set_err( 1, "execute_array expects the 3rd param onwards to be array references, not ". $bind_values[$i-1] );
+                return undef;
+            }
+            $sth->bind_param_array($i,$bind_values[$i-1]);
+        }
+    }
+
     my $tracker = $sth->FETCH('mock_my_history');
-    # don't use a reference; there's some magic attached to it somewhere
-    # so make it a lovely, simple array as soon as possible
     my @bound = @{ $tracker->bound_params() };
-    foreach my $p (@bound) {
-        my $result = $sth->execute( @$p );
-        # store the result from execute() if ArrayTupleStatus attribute is
-        # passed
-        push @{ $attr->{ArrayTupleStatus} }, $result
-            if (exists $attr->{ArrayTupleStatus});
+    if (@bound > 0 && scalar(@{$bound[0]}) > 0){
+        #flip through the arrays, grabbing each value in order
+        for (my $i=0;$i<scalar(@{$bound[0]});$i++){
+            my @p = ();
+            foreach my $param (@bound){
+                push(@p,$param->[$i]);
+            }
+            my $result = $sth->execute( @p );
+            # store the result from execute() if ArrayTupleStatus attribute is
+            # passed
+            push @{ $attr->{ArrayTupleStatus} }, $result
+                if (exists $attr->{ArrayTupleStatus});
+        }
     }
 
     # TODO: the docs say:
