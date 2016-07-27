@@ -1,11 +1,35 @@
 Revision history for Perl extension DBD::Mock.
 
+{{NEXT}}
+    - Add git-repo url to meta-data
+
+1.43
+    - Segregated into different packages
+    - Removed code coverage from POD
+    - Fixed bug rt49537 Basic support for named parameters
+    - Fixed bug rt70421 Build.PL now contains Test::Exception
+
+1.42
+    - Fixed bug rt66815 DBD::Mock::Session error clobbered
+    - Fixed bug rt69460 Info on META.yml is outdated
+    - Fixed bug rt69055 Spelling mistakes in POD
+    - RaiseError now works
+
+1.41 June 22, 2011
+    - Changed incorrect verion number
+
+1.40 June 19, 2011
+    - Fixed bug rt44591 second preapre giving an error
+    - Fixed bug rt57981 warnings during clone
+    - Fixed bug rt63191 Synopsis errors
+    - Fixed bug rt66813 Google's group link in the POD
+
 1.39 November 9, 2008
     - If a statement handle had bound columns, then the fetch() and
       fetchrow_arrayref() methods never returned false. After they
       exhausted their data, they kept returning empty array
-      references. Fixes RT #37054.
-    - Hid all packages but DBD::Mock from PAUSE.
+      references.
+    - Hid all packaged but DBD::Mock from PAUSE.
 
 1.38 November 8, 2008
     - Bumped minimum Perl to 5.8.1, since that's what DBI requires.
