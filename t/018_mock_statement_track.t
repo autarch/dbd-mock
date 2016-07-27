@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 68;
+use Test::More tests => 70;
 
 BEGIN {
     use_ok('DBD::Mock');
@@ -23,6 +23,7 @@ BEGIN {
     can_ok($st_track, 'is_depleted');
     can_ok($st_track, 'to_string');
     can_ok($st_track, 'is_executed');
+    can_ok($st_track, 'times_executed');
     can_ok($st_track, 'statement');
     can_ok($st_track, 'current_record_num');
     can_ok($st_track, 'return_data');
@@ -47,6 +48,7 @@ BEGIN {
     
     is($st_track->statement(), '', '... our statement is a blank string in the default');
     is($st_track->is_executed(), 'no', '... our statement is not executed in the default');
+    is($st_track->times_executed(), '0', '... our statement is executed 0 times in the default');
     
     ok($st_track->is_depleted(), '... the default state is depleted');
     ok(!defined($st_track->next_record()), '... the default state has no next record since it is depleted');

@@ -694,6 +694,24 @@ Gets/sets the fields to use for this statement.
 
 Gets/set the bound parameters to use for this statement.
 
+=item B<all_bound_params>
+
+Gets/set the all_bound_params parameters to use for this statement.  Each array item is an arrayref of bound_params of execute statements on this statement.
+
+If, for instance you made this series of calls:
+
+  my $sth = $dbh->prepare("DELETE FROM foo where baz = ? and flib = ?");
+  $sth->bind_param(1,'1');
+  $sth->bind_param(2,'foo');
+  $sth->execute();
+  $sth->bind_param(1,'2');
+  $sth->bind_param(2,'bar');
+  $sth->execute();
+
+This would return:
+
+  [['1','foo'],['2','bar']]
+
 =item B<return_data>  (Statement attribute 'mock_records')
 
 Gets/sets the data to return when asked (that is, when someone calls 'fetch' on the statement handle).
@@ -709,6 +727,10 @@ Returns true if the statement is a SELECT and has more records to fetch, false o
 =item B<is_executed( $yes_or_no )> (Statement attribute 'mock_is_executed')
 
 Sets the state of the tracker 'executed' flag.
+
+=item B<times_executed()>
+
+Returns how many times this statement has been executed (0 by default)
 
 =item B<is_finished( $yes_or_no )> (Statement attribute 'mock_is_finished')
 
@@ -740,7 +762,7 @@ Pushes C<@params> onto the list of already-set bound parameters.
 
 =item B<mark_executed()>
 
-Tells the tracker that the statement has been executed and resets the current record number to '0'.
+Tells the tracker that the statement has been executed and resets the current record number to '0'.  Also saves the current bound params to 'all_bound_params' property.
 
 =item B<next_record()>
 

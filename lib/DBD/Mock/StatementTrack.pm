@@ -11,6 +11,7 @@ sub new {
     $params{return_data}  ||= [];
     $params{fields}       ||= [];
     $params{bound_params} ||= [];
+    $params{all_bound_params} ||= [];
     $params{statement}    ||= "";
     $params{failure}      ||= undef;
 
@@ -87,6 +88,11 @@ sub bind_params {
     @{ $self->{bound_params} } = @values;
 }
 
+sub save_params {
+    my $self = shift;
+    push(@{$self->{all_bound_params}}, [ @{$self->{bound_params}} ]);
+}
+
 # Rely on the DBI's notion of Active: a statement is active if it's
 # currently in a SELECT and has more records to fetch
 
@@ -111,12 +117,30 @@ sub is_finished {
     return $self->{is_finished};
 }
 
+sub times_executed {
+    my ($self) = @_;
+
+    if ($self->{is_executed} eq 'no'){
+        return 0;
+    }
+    if (exists($self->{all_bound_params})){
+        return scalar(@{$self->{all_bound_params}});
+    #none of this should really happen below
+    } elsif (exists($self->{bound_params})){
+        return 1;
+    } else {
+        return undef;
+    }
+}
+
+
 ####################
 # RETURN VALUES
 
 sub mark_executed {
     my ($self) = @_;
     $self->is_executed('yes');
+    $self->save_params();
     $self->current_record_num(0);
 }
 

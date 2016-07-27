@@ -41,6 +41,15 @@ sub bind_param_inout {
     return 1;
 }
 
+#NB: this essentially does not work with named parameters, because DBD::Mock support is very rudimentary
+#Details: 
+#DBD::Mock always assumes that $sth->bind_param(':foo','bar') is a new named parameter, so even in this sequence:
+#$sth->prepare('insert into my_table (column1) values(:foo)');
+#$sth->bind_param(':foo','bar')
+#$sth->execute();
+#$sth->bind_param(':foo','baz')
+#$sth->execute();
+#DBD::Mock will tell you that 'bar','baz' were two parameters passed to 1 execute
 sub execute_array {
     my ( $sth, $attr, @bind_values ) = @_;
 
